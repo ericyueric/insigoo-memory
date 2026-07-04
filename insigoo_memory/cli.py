@@ -209,6 +209,20 @@ def cmd_diagnose(args):
             print(f"  → {s}")
 
 
+def cmd_brief(args):
+    """行业日报"""
+    watch_dir = args.watch or os.getcwd()
+    issues = args.issues or ["教育"]
+    from .assess import NewsFetcher
+    nf = NewsFetcher()
+    briefing = nf.daily_briefing(watch_dir, issues)
+    result_file = Path(watch_dir) / ".insigoo-memory" / "daily_briefing.md"
+    result_file.parent.mkdir(parents=True, exist_ok=True)
+    result_file.write_text(briefing, encoding="utf-8")
+    print(f"\n📰 行业资讯日报已生成: {result_file}")
+    print(briefing)
+
+
 def main():
     import argparse
     parser = argparse.ArgumentParser(description='insigoo-memory')
@@ -243,6 +257,7 @@ def main():
     elif args.command == 'dashboard': cmd_dashboard(args)
     elif args.command == 'doctor': cmd_doctor(args)
     elif args.command == 'diagnose': cmd_diagnose(args)
+    elif args.command == 'brief': cmd_brief(args)
     else: parser.print_help()
 
 

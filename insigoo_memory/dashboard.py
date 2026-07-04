@@ -112,6 +112,12 @@ class DashboardServer:
         scan = json.dumps(self._scan_data(), ensure_ascii=False)
         return HTML_TEMPLATE.replace("__WATCH_DIR__", self.watch_dir).replace("__DATA_JSON__", scan)
 
+    @staticmethod
+    def build_dashboard_html(watch_dir: str, scan_data: dict) -> str:
+        """静态方法：根据扫描数据生成看板 HTML（供 CLI 直接调用）"""
+        return HTML_TEMPLATE.replace("__WATCH_DIR__", watch_dir).replace(
+            "__DATA_JSON__", json.dumps(scan_data, ensure_ascii=False))
+
 
 HTML_TEMPLATE = r"""<!DOCTYPE html>
 <html lang="zh">
