@@ -7,7 +7,9 @@ from typing import List
 
 sys.path.insert(0, "D:/workbuddy/insigoo-memory")
 
-DS_KEY = "REDACTED_DEEPSEEK_KEY"
+DS_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
+if not DS_KEY:
+    raise RuntimeError("DEEPSEEK_API_KEY environment variable not set")
 DS_URL = "https://api.deepseek.com/v1/chat/completions"
 
 @dataclass
