@@ -110,8 +110,9 @@ def cmd_init(args):
 def cmd_scan(args):
     """重新扫描目录"""
     watch_dir = args.watch or os.getcwd()
+    skip = set(args.skip or [])
     cls = FileClassifier()
-    results = cls.batch_classify(watch_dir)
+    results = cls.batch_classify(watch_dir, skip_dirs=skip)
     total = sum(len(v) for v in results.values())
     print(f"扫描完成: {total} 个文件")
     outdir = Path(watch_dir) / ".insigoo-memory"
@@ -239,6 +240,7 @@ def main():
 
     p_scan = sub.add_parser('scan')
     p_scan.add_argument('-w', '--watch')
+    p_scan.add_argument('--skip', nargs='+', help='排除目录')
 
     p_dash = sub.add_parser('dashboard')
     p_dash.add_argument('-w', '--watch')
