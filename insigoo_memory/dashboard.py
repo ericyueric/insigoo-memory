@@ -298,21 +298,15 @@ function showPanel(id) {
 
 function openFile(path) {
     if (!path) return;
-    // 用 <a> 标签触发 file:// 链接（比 window.open 更可靠）
-    const norm = path.replace(/\\/g, '/');
-    const dir = norm.replace(/\/[^\/]+$/, '');
-    const a = document.createElement('a');
-    a.href = 'file:///' + dir;
-    a.target = '_blank';
-    a.style.display = 'none';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    // 复制文件名
-    const fname = norm.split('/').pop();
-    navigator.clipboard?.writeText(path).then(() => {
-        toast('📂 已打开文件夹 · ' + fname + ' 已复制');
-    }).catch(() => toast('📂 已打开文件夹'));
+    fetch('/api/open?path=' + encodeURIComponent(path))
+        .then(() => {
+            const fname = path.replace(/\\/g, '/').split('/').pop();
+            toast('📂 已打开 ' + fname);
+        })
+        .catch(() => {
+            navigator.clipboard?.writeText(path);
+            toast('⚠️ 请通过 http://localhost:5055 访问看板，或手动粘贴路径');
+        });
 }
 
 async function rescan() {

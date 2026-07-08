@@ -144,7 +144,7 @@ def cmd_scan(args):
 
 
 def cmd_dashboard(args):
-    """生成交互式看板（纯静态 HTML，双击打开即可）"""
+    """生成交互式看板并启动本地服务（支持文件打开）"""
     watch_dir = args.watch or os.getcwd()
 
     # 加载关联目录
@@ -164,10 +164,24 @@ def cmd_dashboard(args):
     html = DashboardServer.build_dashboard_html(watched, scan_data)
     out = Path(watch_dir) / ".insigoo-memory" / "dashboard.html"
     out.write_text(html, encoding="utf-8")
-    print(f"✅ 看板已生成: {out}")
-    print(f"   双击打开即可使用 — 搜索、点击展开、按📂打开文件")
+
+    # 启动本地 server（必须，文件打开功能依赖 /api/open）
+    port = getattr(args, 'port', 5055)
+    server = DashboardServer(watched, port)
+    import threading
+    t = threading.Thread(target=server.start, daemon=True)
+    t.start()
+    import time; time.sleep(0.5)
+
+    print(f"🌐 看板已启动: http://localhost:{port}")
+    print(f"   📂 点击文件→自动用系统程序打开")
+    print(f"   按 Ctrl+C 停止")
     if sys.platform == 'win32':
-        os.startfile(str(out))
+        os.startfile(f"http://localhost:{port}")
+    try:
+        while True: time.sleep(1)
+    except KeyboardInterrupt:
+        print("\n   👋 看板已关闭")
 
 
 def cmd_doctor(args):
@@ -271,6 +285,7 @@ def main():
 
     p_dash = sub.add_parser('dashboard')
     p_dash.add_argument('-w', '--watch')
+    p_dash.add_argument('-p', '--port', type=int, default=5055)
 
     p_doc = sub.add_parser('doctor')
     p_doc.add_argument('-w', '--watch')
