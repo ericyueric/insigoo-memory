@@ -298,9 +298,15 @@ function showPanel(id) {
 
 function openFile(path) {
     if (!path) return;
-    fetch('/api/open?path=' + encodeURIComponent(path))
-        .then(() => toast('📂 已打开文件'))
-        .catch(() => toast('❌ 无法打开文件'));
+    // 尝试直接打开（静态 HTML 文件方式）
+    const url = 'file:///' + path.replace(/\\/g, '/');
+    const w = window.open(url, '_blank');
+    if (!w || w.closed) {
+        // 兜底：复制路径到剪贴板
+        navigator.clipboard.writeText(path).then(() => {
+            toast('📋 路径已复制: ' + path.split(/[\\/]/).pop());
+        }).catch(() => toast('❌ 无法打开，路径: ' + path));
+    }
 }
 
 async function rescan() {
