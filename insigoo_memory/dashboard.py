@@ -298,15 +298,14 @@ function showPanel(id) {
 
 function openFile(path) {
     if (!path) return;
-    // 尝试直接打开（静态 HTML 文件方式）
-    const url = 'file:///' + path.replace(/\\/g, '/');
-    const w = window.open(url, '_blank');
-    if (!w || w.closed) {
-        // 兜底：复制路径到剪贴板
-        navigator.clipboard.writeText(path).then(() => {
-            toast('📋 路径已复制: ' + path.split(/[\\/]/).pop());
-        }).catch(() => toast('❌ 无法打开，路径: ' + path));
-    }
+    // 打开文件所在文件夹（Explorer），浏览器能可靠处理 file:// 目录
+    const norm = path.replace(/\\/g, '/');
+    const dirUrl = 'file:///' + norm.replace(/\/[^\/]+$/, '');
+    const w = window.open(dirUrl, '_blank');
+    // 同时复制文件路径
+    navigator.clipboard?.writeText(path).then(() => {
+        toast('📂 已打开文件夹，路径已复制: ' + norm.split('/').pop());
+    }).catch(() => toast('📂 已打开文件夹'));
 }
 
 async function rescan() {
