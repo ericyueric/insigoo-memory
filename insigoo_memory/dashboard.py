@@ -38,13 +38,14 @@ class DashboardServer:
                 elif self.path in ("/", ""):
                     self.path = "/index.html"; super().do_GET()
                 elif self.path.startswith("/api/open"):
-                    # /api/open?path=... → 用系统默认程序打开文件
-                    from urllib.parse import urlparse, parse_qs
+                    from urllib.parse import urlparse, parse_qs, unquote
                     qs = parse_qs(urlparse(self.path).query)
-                    fp = qs.get("path", [""])[0]
+                    fp = unquote(qs.get("path", [""])[0])
                     if fp and os.path.exists(fp):
                         os.startfile(fp) if os.name == 'nt' else subprocess.Popen(['xdg-open', fp])
-                    self._json({"ok": True})
+                        self._json({"ok": True, "opened": fp})
+                    else:
+                        self._json({"ok": False, "error": f"文件不存在: {fp}"})
                 else:
                     super().do_GET()
 
@@ -299,13 +300,18 @@ function showPanel(id) {
 function openFile(path) {
     if (!path) return;
     fetch('/api/open?path=' + encodeURIComponent(path))
-        .then(() => {
-            const fname = path.replace(/\\/g, '/').split('/').pop();
-            toast('📂 已打开 ' + fname);
+        .then(r => r.json())
+        .then(d => {
+            if (d.ok) {
+                toast('📂 已打开 ' + (d.opened || '').split(/[\\/]/).pop());
+            } else {
+                navigator.clipboard?.writeText(path);
+                toast('❌ ' + (d.error || '无法打开'));
+            }
         })
         .catch(() => {
             navigator.clipboard?.writeText(path);
-            toast('⚠️ 请通过 http://localhost:5055 访问看板，或手动粘贴路径');
+            toast('⚠️ 请通过 http://localhost:5055 访问看板');
         });
 }
 
