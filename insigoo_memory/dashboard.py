@@ -1,16 +1,17 @@
 """
-增强版看板 — 上传文件 / 诊断 / 知识产权声明
+看板 — 九区知识看板，支持多文件夹、文件预览/打开、诊断（需LLM API）
 """
-import json, os, subprocess, tempfile, shutil
+import json, os, subprocess, shutil
 from pathlib import Path
 from http.server import HTTPServer, SimpleHTTPRequestHandler
-import webbrowser, threading, cgi
+import webbrowser, threading
 
 
 class DashboardServer:
-    def __init__(self, watch_dir: str, port: int = 5055):
-        self.watch_dir = watch_dir
-        self.data_dir = Path(watch_dir) / ".insigoo-memory"
+    def __init__(self, watch_dirs: list, port: int = 5055):
+        self.watch_dirs = watch_dirs
+        self.primary = watch_dirs[0] if watch_dirs else os.getcwd()
+        self.data_dir = Path(self.primary) / ".insigoo-memory"
         self.port = port
 
     def start(self):
@@ -32,29 +33,38 @@ class DashboardServer:
             def do_GET(self):
                 if self.path == "/api/scan":
                     self._json(outer._scan_data())
-                elif self.path == "/api/diagnose":
-                    self._json({"ready": True, "hint": "POST /api/diagnose with body {\"text\":\"...\"}"})
+                elif self.path == "/api/watched":
+                    self._json({"dirs": outer.watch_dirs})
                 elif self.path in ("/", ""):
                     self.path = "/index.html"; super().do_GET()
+                elif self.path.startswith("/api/open"):
+                    # /api/open?path=... → 用系统默认程序打开文件
+                    from urllib.parse import urlparse, parse_qs
+                    qs = parse_qs(urlparse(self.path).query)
+                    fp = qs.get("path", [""])[0]
+                    if fp and os.path.exists(fp):
+                        os.startfile(fp) if os.name == 'nt' else subprocess.Popen(['xdg-open', fp])
+                    self._json({"ok": True})
                 else:
                     super().do_GET()
 
             def do_POST(self):
-                if self.path == "/api/upload":
-                    content_len = int(self.headers.get('Content-Length', 0))
-                    body = self.rfile.read(content_len)
-                    data = json.loads(body)
-                    result = outer._handle_upload(data)
-                    self._json(result)
-                elif self.path == "/api/diagnose":
-                    content_len = int(self.headers.get('Content-Length', 0))
-                    body = self.rfile.read(content_len)
-                    data = json.loads(body)
-                    result = outer._diagnose(data.get("text", ""))
-                    self._json(result)
+                cl = int(self.headers.get('Content-Length', 0))
+                body = json.loads(self.rfile.read(cl)) if cl > 0 else {}
+                if self.path == "/api/diagnose":
+                    self._json(outer._diagnose(body.get("text", "")))
                 elif self.path == "/api/rescan":
                     outer._rescan()
                     self._json({"ok": True})
+                elif self.path == "/api/add-dir":
+                    d = body.get("dir", "")
+                    if d and os.path.isdir(d) and d not in outer.watch_dirs:
+                        outer.watch_dirs.append(d)
+                        outer._save_dirs()
+                        outer._rescan()
+                        self._json({"ok": True, "dir": d})
+                    else:
+                        self._json({"ok": False, "error": "目录不存在或已添加"})
                 else:
                     self.send_response(404); self.end_headers()
 
@@ -73,49 +83,37 @@ class DashboardServer:
 
     def _rescan(self):
         from .classifier import FileClassifier
-        r = FileClassifier().batch_classify(self.watch_dir)
+        from .nine_zones import ZONES
+        fc = FileClassifier()
+        merged = {z.id: [] for z in ZONES}
+        merged['uncategorized'] = []
+        seen = set()
+        for wd in self.watch_dirs:
+            for zid, files in fc.batch_classify(wd, skip_dirs={".insigoo-memory", ".workbuddy"}).items():
+                for f in files:
+                    key = f['name'] + f.get('path', '')
+                    if key not in seen:
+                        seen.add(key)
+                        merged[zid].append(f)
         with open(self.data_dir / "scan_result.json", "w", encoding="utf-8") as fh:
-            json.dump(r, fh, ensure_ascii=False, indent=2)
+            json.dump(merged, fh, ensure_ascii=False, indent=2)
 
-    ZONE_DIRS = {
-        "industry": "行业资讯", "research": "研究学习", "design": "设计物料",
-        "project_plan": "项目方案", "project_trace": "项目痕迹", "finance": "财务资料",
-        "mne": "监测评估", "closure": "结项资料", "admin": "行政人事",
-    }
-
-    def _handle_upload(self, data: dict) -> dict:
-        """JSON upload: {filename, content} — 写入文件后重分类 → 移动到对应知识区文件夹"""
-        try:
-            fname = data.get("filename", "uploaded_file.txt")
-            content = data.get("content", "")
-            dest = Path(self.watch_dir) / Path(fname).name
-            dest.write_text(content, encoding="utf-8")
-            from .classifier import FileClassifier
-            zone, score = FileClassifier().classify(str(dest))
-            # 移动到对应知识区文件夹
-            zone_dir_name = self.ZONE_DIRS.get(zone.id, "未分类")
-            zone_dir = Path(self.watch_dir) / zone_dir_name
-            zone_dir.mkdir(exist_ok=True)
-            final_path = zone_dir / dest.name
-            shutil.move(str(dest), str(final_path))
-            self._rescan()
-            return {"ok": True, "filename": fname, "zone": zone.name, "emoji": zone.emoji,
-                    "confidence": score, "moved_to": str(final_path)}
-        except Exception as e:
-            return {"ok": False, "error": str(e)}
+    def _save_dirs(self):
+        with open(self.data_dir / "watched_dirs.json", "w", encoding="utf-8") as f:
+            json.dump(self.watch_dirs, f, ensure_ascii=False)
 
     def _diagnose(self, text: str) -> dict:
         from .assess import Diagnostician
         return Diagnostician().assess(text)
 
     def _build_interactive(self) -> str:
+        dirs_json = json.dumps(self.watch_dirs, ensure_ascii=False)
         scan = json.dumps(self._scan_data(), ensure_ascii=False)
-        return HTML_TEMPLATE.replace("__WATCH_DIR__", self.watch_dir).replace("__DATA_JSON__", scan)
+        return HTML_TEMPLATE.replace("__WATCH_DIRS__", dirs_json).replace("__DATA_JSON__", scan)
 
     @staticmethod
-    def build_dashboard_html(watch_dir: str, scan_data: dict) -> str:
-        """静态方法：根据扫描数据生成看板 HTML（供 CLI 直接调用）"""
-        return HTML_TEMPLATE.replace("__WATCH_DIR__", watch_dir).replace(
+    def build_dashboard_html(watch_dirs: list, scan_data: dict) -> str:
+        return HTML_TEMPLATE.replace("__WATCH_DIRS__", json.dumps(watch_dirs, ensure_ascii=False)).replace(
             "__DATA_JSON__", json.dumps(scan_data, ensure_ascii=False))
 
 
@@ -133,26 +131,34 @@ h1{font-size:22px;margin-bottom:2px}.subtitle{color:#8b949e;font-size:12px;margi
 .toolbar input:focus{border-color:#58a6ff}
 .btn{background:#238636;border:none;color:#fff;padding:7px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;white-space:nowrap}
 .btn:hover{background:#2ea043}.btn2{background:#1f6feb}.btn2:hover{background:#388bfd}
+.btn-sm{background:#30363d;border:none;color:#c9d1d9;padding:3px 8px;border-radius:4px;cursor:pointer;font-size:11px}
+.btn-sm:hover{background:#484f58}
 .status{display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap}
 .stat{background:#161b22;border:1px solid #30363d;padding:7px 14px;border-radius:8px;font-size:12px}.stat strong{color:#58a6ff}
+.watched{font-size:11px;color:#8b949e;margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.watched span{background:#1a2332;padding:3px 10px;border-radius:12px;font-size:11px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px}
-.zone-card{background:#161b22;border:1px solid #30363d;border-radius:10px;padding:12px;cursor:pointer;transition:border-color .2s}
+.zone-card{background:#161b22;border:1px solid #30363d;border-radius:10px;padding:12px;transition:border-color .2s}
 .zone-card:hover{border-color:#58a6ff}.zone-card.empty{opacity:0.5}
 .zone-header{display:flex;align-items:center;gap:8px;margin-bottom:4px}
 .zone-emoji{font-size:18px}.zone-name{font-weight:600;font-size:14px}
 .zone-count{margin-left:auto;background:#238636;color:#fff;padding:2px 10px;border-radius:20px;font-size:12px;font-weight:600}
 .zone-count.zero{background:#30363d}.zone-desc{color:#8b949e;font-size:11px;margin-bottom:6px}
-.zone-files{list-style:none;font-size:11px;display:none;max-height:200px;overflow-y:auto}
-.zone-files.show{display:block}.zone-files li{padding:2px 0;color:#c9d1d9;border-bottom:1px solid #21262d}
+.zone-files{list-style:none;font-size:11px;display:none;max-height:220px;overflow-y:auto}
+.zone-files.show{display:block}.zone-files li{padding:4px 0;color:#c9d1d9;border-bottom:1px solid #21262d;display:flex;justify-content:space-between;align-items:center;gap:8px}
 .zone-files li:last-child{border-bottom:none}
+.zone-files li .fname{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+.zone-files li .fname:hover{color:#58a6ff;text-decoration:underline}
+.zone-files li .fpath{font-size:10px;color:#484f58;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .panel{margin-top:14px;background:#161b22;border:1px solid #30363d;border-radius:10px;padding:14px}
 .panel h3{font-size:14px;margin-bottom:8px}
 #diag-input{width:100%;min-height:80px;background:#0d1117;border:1px solid #30363d;color:#e1e4e8;padding:10px;border-radius:8px;font-size:12px;resize:vertical;margin-bottom:8px}
 #diag-result{font-size:12px;line-height:1.6}
 #diag-result .pass{color:#3fb950}#diag-result .fail{color:#f85149}
-.upload-area{border:2px dashed #30363d;border-radius:10px;padding:20px;text-align:center;color:#8b949e;font-size:13px;margin-bottom:10px;cursor:pointer}
-.upload-area:hover{border-color:#58a6ff;color:#e1e4e8}
-.upload-area input{display:none}
+.diag-hint{background:#1a2332;border:1px solid #1f6feb;border-radius:8px;padding:10px 14px;font-size:12px;color:#8b949e;margin-bottom:10px}
+.diag-hint strong{color:#58a6ff}
+.add-dir{display:flex;gap:6px;margin-bottom:10px}
+.add-dir input{flex:1;background:#161b22;border:1px solid #30363d;color:#e1e4e8;padding:6px 10px;border-radius:6px;font-size:12px}
 .footer{margin-top:30px;padding:16px;background:#0d1117;border:1px solid #21262d;border-radius:10px;font-size:11px;color:#8b949e;line-height:1.7}
 .footer h4{color:#e1e4e8;font-size:13px;margin-bottom:8px}
 .footer a{color:#58a6ff}
@@ -161,29 +167,34 @@ h1{font-size:22px;margin-bottom:2px}.subtitle{color:#8b949e;font-size:12px;margi
 </head>
 <body>
 <h1>🧠 insigoo-memory</h1>
-<p class="subtitle">📁 __WATCH_DIR__</p>
+<p class="subtitle">公益组织 AI 知识管家 · 九区看板</p>
+
+<div class="watched" id="watched-dirs"></div>
 
 <div class="toolbar">
     <input type="text" id="search" placeholder="搜索文件名..." oninput="filter()">
-    <button class="btn" onclick="render()">🔄 刷新</button>
+    <button class="btn btn2" onclick="showPanel('add-dir-panel')">📂 关联文件夹</button>
     <button class="btn" onclick="rescan()">🔄 重新扫描</button>
     <button class="btn btn2" onclick="showPanel('diag-panel')">📋 项目诊断</button>
-    <button class="btn" onclick="showPanel('upload-panel')">📤 上传文件</button>
 </div>
 
-<!-- Upload Panel -->
-<div class="panel" id="upload-panel" style="display:none">
-    <h3>📤 上传文件到知识库</h3>
-    <div class="upload-area" onclick="document.getElementById('file-input').click()">
-        <input type="file" id="file-input" onchange="handleUpload(this.files[0])">
-        点击选择文件，或拖拽文件到此处
+<!-- Add Directory -->
+<div class="panel" id="add-dir-panel" style="display:none">
+    <h3>📂 关联知识库文件夹</h3>
+    <div class="add-dir">
+        <input type="text" id="add-dir-input" placeholder="输入文件夹路径，如 D:\Documents\项目文件">
+        <button class="btn" onclick="addDir()">➕ 关联并扫描</button>
     </div>
-    <div id="upload-result" style="font-size:12px;margin-top:8px"></div>
 </div>
 
 <!-- Diagnosis Panel -->
 <div class="panel" id="diag-panel" style="display:none">
     <h3>📋 项目书诊断 (SIA L1 逻辑自洽)</h3>
+    <div class="diag-hint">
+        ⚠️ <strong>离线模式</strong>：诊断基于内置规则检查。<br>
+        如需 AI 深度分析，请在终端设置 LLM API Key：<br>
+        <code style="background:#0d1117;padding:2px 6px;border-radius:4px">ollama pull qwen2.5:7b</code> 启动本地模型，或设置 <code style="background:#0d1117;padding:2px 6px;border-radius:4px">DEEPSEEK_API_KEY</code> 环境变量。
+    </div>
     <textarea id="diag-input" placeholder="粘贴项目方案内容..."></textarea>
     <button class="btn" onclick="diagnose()">🔍 开始诊断</button>
     <div id="diag-result" style="margin-top:10px"></div>
@@ -192,18 +203,16 @@ h1{font-size:22px;margin-bottom:2px}.subtitle{color:#8b949e;font-size:12px;margi
 <div class="status">
     <div class="stat">📄 <strong id="total">-</strong> 个文件</div>
     <div class="stat">📂 <strong id="zones_filled">-</strong> 个区域</div>
-    <div class="stat">💡 <a href="#" onclick="showPanel('diag-panel')" style="color:#58a6ff">项目诊断</a></div>
 </div>
 
 <div class="grid" id="grid"></div>
 
-<!-- Footer -->
 <div class="footer">
 <h4>📜 知识产权说明</h4>
 <p>
 <strong>insigoo-memory</strong> 由因思阁(insigoo)自主开发。<br>
-<strong>借鉴的开源技术</strong>：Python标准库(http.server,argparse,dataclasses)、Ollama(本地LLM推理)、FAISS(向量索引)、LanceDB(嵌入式向量库设计理念)、EverOS(Markdown原生记忆层理念)。<br>
-<strong>自研创新</strong>：9区NGO知识分类模型、SIA L1项目逻辑自洽评估框架(7原则)、12行业知识包体系、3级索引机制(目录/项目/场景)、日程检测与运营建议引擎、离线零成本部署方案。<br>
+<strong>借鉴的开源技术</strong>：Python标准库、Ollama、FAISS。<br>
+<strong>自研创新</strong>：9区NGO知识分类模型、SIA L1项目逻辑自洽评估框架(7原则)、12行业知识包体系、4级索引机制(目录/项目/场景/语料)。<br>
 <strong>联系</strong>：<a href="mailto:insigoo@insigoo.cn">insigoo@insigoo.cn</a>
 </p>
 </div>
@@ -212,6 +221,7 @@ h1{font-size:22px;margin-bottom:2px}.subtitle{color:#8b949e;font-size:12px;margi
 
 <script>
 const EMBEDDED = __DATA_JSON__;
+const WATCHDIRS = __WATCH_DIRS__;
 let scanData = EMBEDDED;
 const ZONES = [
     {id:"industry",emoji:"📰",name:"行业资讯",desc:"政策通知、资助机会、同行动态"},
@@ -229,6 +239,14 @@ async function load() {
     try { const r = await fetch('/api/scan'); scanData = await r.json(); } catch(e) {}
     render();
 }
+
+function renderWatched() {
+    const el = document.getElementById('watched-dirs');
+    el.innerHTML = '📁 知识库文件夹: ' + WATCHDIRS.map(d =>
+        `<span title="${d}">${d.split(/[\\/]/).pop()||d}</span>`
+    ).join('');
+}
+renderWatched();
 
 function filter() {
     const q = document.getElementById('search').value.toLowerCase();
@@ -248,10 +266,17 @@ function render() {
     grid.innerHTML = ZONES.map(z => {
         const files = scanData[z.id] || [];
         if (Array.isArray(files)) { total += files.length; if (files.length > 0) filled++; }
-        const list = Array.isArray(files) ? files.map(f =>
-            `<li><span title="${f.path||''}">${f.name||'?'}</span></li>`
-        ).join('') || '<li style="color:#8b949e">（暂无文件）</li>' : '';
-        return `<div class="zone-card${files.length===0?' empty':''}" onclick="this.querySelector('.zone-files').classList.toggle('show')">
+        const list = Array.isArray(files) ? files.map(f => {
+            const fp = f.path || '';
+            const name = f.name || '?';
+            const displayPath = fp.length > 60 ? '...' + fp.slice(-57) : fp;
+            return `<li>
+                <span class="fname" onclick="openFile('${fp.replace(/'/g,"\\'")}')" title="${fp}">${name}</span>
+                <span class="fpath" title="${fp}">${displayPath}</span>
+                <button class="btn-sm" onclick="openFile('${fp.replace(/'/g,"\\'")}')">📂</button>
+            </li>`;
+        }).join('') || '<li style="color:#8b949e">（暂无文件）</li>' : '';
+        return `<div class="zone-card${files.length===0?' empty':''}" onclick="event.target.tagName==='DIV'&&this.querySelector('.zone-files').classList.toggle('show')">
             <div class="zone-header">
                 <span class="zone-emoji">${z.emoji}</span>
                 <span class="zone-name">${z.name}</span>
@@ -266,43 +291,47 @@ function render() {
 }
 
 function showPanel(id) {
-    ['upload-panel','diag-panel'].forEach(x => {
+    ['add-dir-panel','diag-panel'].forEach(x => {
         document.getElementById(x).style.display = (x===id ? 'block' : 'none');
     });
 }
 
+function openFile(path) {
+    if (!path) return;
+    fetch('/api/open?path=' + encodeURIComponent(path))
+        .then(() => toast('📂 已打开文件'))
+        .catch(() => toast('❌ 无法打开文件'));
+}
+
 async function rescan() {
     toast('⏳ 重新扫描中...');
-    await fetch('/api/rescan');
+    await fetch('/api/rescan', {method:'POST'});
     await load();
     toast('✅ 扫描完成');
 }
 
-async function handleUpload(file) {
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = async e => {
-        const content = e.target.result;
-        const r = await fetch('/api/upload', {
-            method:'POST', headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({filename: file.name, content: content})
-        });
-        const d = await r.json();
-        if (d.ok) {
-            document.getElementById('upload-result').innerHTML =
-                `✅ ${d.filename} → ${d.emoji} ${d.zone} (${d.confidence}%)
-                 <br><span style="color:#8b949e;font-size:11px">📁 已保存至 ${d.moved_to}</span>`;
-            await load();
-        } else {
-            document.getElementById('upload-result').innerHTML = `❌ ${d.error}`;
-        }
-    };
-    reader.readAsText(file);
+async function addDir() {
+    const dir = document.getElementById('add-dir-input').value.trim();
+    if (!dir) return toast('请输入文件夹路径');
+    const r = await fetch('/api/add-dir', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({dir})
+    });
+    const d = await r.json();
+    if (d.ok) {
+        WATCHDIRS.push(d.dir);
+        renderWatched();
+        toast('✅ 已关联: ' + d.dir.split(/[\\/]/).pop());
+        await load();
+    } else {
+        toast('❌ ' + (d.error || '添加失败'));
+    }
 }
 
 async function diagnose() {
     const text = document.getElementById('diag-input').value;
     if (!text) return toast('请先粘贴项目方案内容');
+    toast('⏳ 诊断中...');
     const r = await fetch('/api/diagnose', {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({text})
@@ -319,7 +348,7 @@ async function diagnose() {
 function toast(msg) {
     const t = document.getElementById('toast');
     t.textContent = msg; t.style.display='block';
-    setTimeout(() => t.style.display='none', 3000);
+    setTimeout(() => t.style.display='none', 2800);
 }
 
 load();
@@ -329,8 +358,8 @@ setInterval(load, 60000);
 </html>"""
 
 
-def start_dashboard(watch_dir: str, port: int = 5055):
-    server = DashboardServer(watch_dir, port)
+def start_dashboard(watch_dirs: list, port: int = 5055):
+    server = DashboardServer(watch_dirs, port)
     threading.Thread(target=server.start, daemon=True).start()
     import time; time.sleep(1.5)
     webbrowser.open(f"http://localhost:{port}")

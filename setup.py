@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="insigoo-memory",
-    version="0.3.2",
+    version="0.4.0",
     description="公益组织 AI 知识管家",
     author="insigoo 因思阁",
     packages=find_packages(exclude=["benchmarks", "benchmarks.*", "test_fixtures", "test_fixtures.*"]),

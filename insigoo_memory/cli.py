@@ -10,122 +10,146 @@ from .classifier import FileClassifier
 from .nine_zones import ZONES
 
 def cmd_init(args):
-    """初始化知识库"""
-    watch_dirs = args.watch or [os.getcwd()]
-    if isinstance(watch_dirs, str):
-        watch_dirs = [watch_dirs]
-    issues = args.issues or ["教育"]
-    max_size = getattr(args, 'max_size', 50)  # MB
+    """初始化知识库 — 交互式向导"""
+    watch_dirs = list(args.watch) if args.watch else []
+
+    # 交互式：询问目录
+    if not watch_dirs:
+        print("\n🧠 insigoo-memory v0.4.0")
+        print("   公益组织 AI 知识管家\n")
+        d = input("📁 请输入知识库文件夹路径: ").strip()
+        if not d:
+            print("❌ 未输入路径，已取消")
+            return
+        if not os.path.isdir(d):
+            print(f"❌ 目录不存在: {d}")
+            return
+        watch_dirs = [d]
+
+    issues = args.issues or ["公益", "环境", "教育"]
+    max_size = getattr(args, 'max_size', 100)
     port = getattr(args, 'port', 5055)
 
-    print(f"\n🧠 insigoo-memory v0.1.0")
-    print(f"   正在扫描 {len(watch_dirs)} 个目录:")
+    print(f"\n   正在扫描 {len(watch_dirs)} 个目录:")
     for wd in watch_dirs:
         print(f"     📁 {wd}")
-    print(f"   关注议题: {', '.join(issues)}\n")
+    print(f"   关注议题: {', '.join(issues)}")
+    print(f"   跳过 >{max_size}MB 的文件\n")
 
-    # 分类所有目录
+    # 分类
     cls = FileClassifier()
-    all_results = {}
+    from .nine_zones import ZONES
+    merged = {z.id: [] for z in ZONES}
+    merged['uncategorized'] = []
+    seen = set()
     for wd in watch_dirs:
-        results = cls.batch_classify(wd)
-        # 合并结果
+        results = cls.batch_classify(wd, max_mb=max_size, skip_dirs={".insigoo-memory", ".git", ".workbuddy"})
         for zid, files in results.items():
-            if zid not in all_results:
-                all_results[zid] = []
-            all_results[zid].extend(files)
+            for f in files:
+                key = f['name'] + f.get('path', '')
+                if key not in seen:
+                    seen.add(key)
+                    merged[zid].append(f)
 
-    results = all_results
-
-    # 统计
-    total = sum(len(v) for k, v in results.items() if k != 'uncategorized')
-    uncat = len(results.get('uncategorized', []))
+    total = sum(len(v) for k, v in merged.items() if k != 'uncategorized')
+    uncat = len(merged.get('uncategorized', []))
     print(f"   ✅ 找到 {total} 个文件，跨 9 个知识区")
     if uncat:
-        print(f"   ⚠ {uncat} 个文件暂未分类\n")
-    else:
-        print()
+        print(f"   ⚠ {uncat} 个文件暂未分类")
 
-    # 输出 9 区看板
-    print("═══ 9 区看板 ═══\n")
-    for zone in ZONES:
-        files = results.get(zone.id, [])
-        icon = "📊" if len(files) > 0 else "📭"
-        print(f"  {zone.emoji} {zone.name:6}  {len(files):>4} 个文件")
-        if len(files) <= 3 and len(files) > 0:
-            for f in files[:3]:
-                print(f"     └─ {f['name'][:50]}")
-        print()
-
-    # 存储结果（存在第一个目录下）
+    # 保存结果 + 目录配置
     outdir = Path(watch_dirs[0]) / ".insigoo-memory"
     outdir.mkdir(exist_ok=True)
-    # 同时记录扫描的所有目录
-    results = dict(results)
-    results['_scanned_dirs'] = watch_dirs
+    merged['_watched_dirs'] = watch_dirs
     with open(outdir / "scan_result.json", "w", encoding="utf-8") as f:
-        json.dump(results, f, ensure_ascii=False, indent=2)
+        json.dump(merged, f, ensure_ascii=False, indent=2)
+    with open(outdir / "watched_dirs.json", "w", encoding="utf-8") as f:
+        json.dump(watch_dirs, f, ensure_ascii=False)
 
-    print(f"📁 扫描结果已保存到 {outdir}/scan_result.json")
-
-    # 安装行业知识包
-    from .packs import install_packs
-    installed = install_packs(issues, str(outdir.parent))
-    if installed:
-        print(f"\n📦 已安装行业知识包:")
-        for p in installed:
-            print(f"   ✅ {p}")
-
-    # 初始化语料索引
+    # 四级索引
     from .corpus import CorpusIndex
     CorpusIndex(str(outdir.parent))._write_md({})
     print(f"\n🧬 四级索引体系已就绪")
+
+    # 输出九区看板
+    print("\n═══ 9 区看板 ═══\n")
+    for zone in ZONES:
+        files = merged.get(zone.id, [])
+        bar = "█" * min(len(files) // 20, 30) if len(files) > 0 else ""
+        print(f"  {zone.emoji} {zone.name:6s}  {len(files):>5d}  {bar}")
+
+    # 打开看板
+    print(f"\n🌐 看板已生成: {outdir}/dashboard.html")
+    if sys.platform == 'win32':
+        os.startfile(str(outdir / "dashboard.html"))
+
+    # 日报
     from .assess import NewsFetcher
-    nf = NewsFetcher()
-    briefing = nf.daily_briefing(str(outdir.parent), issues)
-    (outdir / "daily_briefing.md").write_text(briefing, encoding="utf-8")
-    print(f"\n📰 行业资讯日报已生成")
+    try:
+        nf = NewsFetcher()
+        briefing = nf.daily_briefing(str(outdir.parent), issues)
+        (outdir / "daily_briefing.md").write_text(briefing, encoding="utf-8")
+        print(f"\n📰 行业资讯日报已生成")
+    except:
+        pass
 
-    # 日程检测 + 建议
-    from .detector import ScheduleDetector, Advisor
-    detector = ScheduleDetector()
-    alerts = detector.detect(results)
-    if alerts:
-        print(f"\n🔔 发现 {len(alerts)} 个待办:")
-        for a in alerts[:5]:
-            icon = {'high':'🔴','medium':'🟡','low':'🟢'}.get(a['urgency'],'⚪')
-            print(f"   {icon} {a['message'][:80]}")
-        if len(alerts) > 5:
-            print(f"   ... 还有 {len(alerts)-5} 个")
-
-    advisor = Advisor()
-    suggestions = advisor.suggest(results)
-    print(f"\n💡 运营建议 ({len(suggestions)} 条):")
-    for s in suggestions[:3]:
-        print(f"   → {s['message'][:80]}")
-
-    print(f"\n🌐 启动看板: insigoo-memory dashboard")
+    print(f"\n💡 提示:")
+    print(f"   关联更多文件夹: insigoo-memory scan --add <路径>")
+    print(f"   重新扫描: insigoo-memory scan")
+    print(f"   项目诊断: insigoo-memory diagnose -f <文件>")
+    print(f"   启动看板: insigoo-memory dashboard")
 
 
 def cmd_scan(args):
-    """重新扫描目录"""
+    """重新扫描目录，支持 --add 添加新文件夹"""
     watch_dir = args.watch or os.getcwd()
+
+    # 加载已有关联目录
+    cfg_file = Path(watch_dir) / ".insigoo-memory" / "watched_dirs.json"
+    watched = json.loads(cfg_file.read_text(encoding="utf-8")) if cfg_file.exists() else [watch_dir]
+
+    # --add 添加新目录
+    if hasattr(args, 'add') and args.add:
+        for d in args.add:
+            d = os.path.abspath(d)
+            if os.path.isdir(d) and d not in watched:
+                watched.append(d)
+                print(f"   📂 已关联: {d}")
+
     skip = set(args.skip or [])
     cls = FileClassifier()
-    results = cls.batch_classify(watch_dir, skip_dirs=skip)
-    total = sum(len(v) for v in results.values())
-    print(f"扫描完成: {total} 个文件")
+    from .nine_zones import ZONES
+    merged = {z.id: [] for z in ZONES}
+    merged['uncategorized'] = []
+    seen = set()
+
+    for wd in watched:
+        results = cls.batch_classify(wd, skip_dirs=skip)
+        for zid, files in results.items():
+            for f in files:
+                key = f['name'] + f.get('path', '')
+                if key not in seen:
+                    seen.add(key)
+                    merged[zid].append(f)
+
+    total = sum(len(v) for v in merged.values())
+    print(f"扫描完成: {total} 个文件（{len(watched)} 个目录）")
     outdir = Path(watch_dir) / ".insigoo-memory"
     outdir.mkdir(exist_ok=True)
+    merged['_watched_dirs'] = watched
     with open(outdir / "scan_result.json", "w", encoding="utf-8") as f:
-        json.dump(results, f, ensure_ascii=False, indent=2)
+        json.dump(merged, f, ensure_ascii=False, indent=2)
+    with open(outdir / "watched_dirs.json", "w", encoding="utf-8") as f:
+        json.dump(watched, f, ensure_ascii=False)
 
 
 def cmd_dashboard(args):
     """生成交互式看板（纯静态 HTML，双击打开即可）"""
     watch_dir = args.watch or os.getcwd()
-    from .dashboard import DashboardServer
-    import json as _json
+
+    # 加载关联目录
+    cfg_file = Path(watch_dir) / ".insigoo-memory" / "watched_dirs.json"
+    watched = json.loads(cfg_file.read_text(encoding="utf-8")) if cfg_file.exists() else [watch_dir]
 
     result_file = Path(watch_dir) / ".insigoo-memory" / "scan_result.json"
     if not result_file.exists():
@@ -133,13 +157,15 @@ def cmd_dashboard(args):
         return
 
     with open(result_file, "r", encoding="utf-8") as f:
-        scan_data = _json.load(f)
+        scan_data = json.load(f)
+    scan_data.pop('_watched_dirs', None)
 
-    html = DashboardServer.build_dashboard_html(watch_dir, scan_data)
+    from .dashboard import DashboardServer
+    html = DashboardServer.build_dashboard_html(watched, scan_data)
     out = Path(watch_dir) / ".insigoo-memory" / "dashboard.html"
     out.write_text(html, encoding="utf-8")
     print(f"✅ 看板已生成: {out}")
-    print(f"   双击打开即可使用 — 搜索、点击展开、实时过滤")
+    print(f"   双击打开即可使用 — 搜索、点击展开、按📂打开文件")
     if sys.platform == 'win32':
         os.startfile(str(out))
 
@@ -241,6 +267,7 @@ def main():
     p_scan = sub.add_parser('scan')
     p_scan.add_argument('-w', '--watch')
     p_scan.add_argument('--skip', nargs='+', help='排除目录')
+    p_scan.add_argument('--add', nargs='+', help='关联新文件夹')
 
     p_dash = sub.add_parser('dashboard')
     p_dash.add_argument('-w', '--watch')
