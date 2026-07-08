@@ -243,7 +243,8 @@ h1{font-size:22px;margin-bottom:2px}.subtitle{color:#8b949e;font-size:12px;margi
         <span id="key-status" style="font-size:11px;color:#8b949e;margin-left:8px"></span>
     </div>
     <textarea id="diag-input" placeholder="粘贴项目方案内容..."></textarea>
-    <button class="btn" onclick="diagnose()">🔍 开始诊断</button>
+    <button class="btn" id="diag-btn" onclick="diagnose()" style="display:none">🔍 开始诊断</button>
+    <div id="diag-nokey" style="color:#f85149;font-size:13px;margin-top:8px">⚠️ 该功能依赖 LLM 大模型才能使用，请先配置 API Key</div>
     <div id="diag-result" style="margin-top:10px"></div>
 </div>
 
@@ -407,7 +408,10 @@ async function setApiKey() {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({key, provider})
     });
-    document.getElementById('key-status').textContent = provider ? '✅ LLM 已配置' : '⚠️ 请先配置 API Key';
+    const hasKey = key && provider;
+    document.getElementById('key-status').textContent = hasKey ? '✅ LLM 已配置' : '⚠️ 请先配置 API Key';
+    document.getElementById('diag-btn').style.display = hasKey ? '' : 'none';
+    document.getElementById('diag-nokey').style.display = hasKey ? 'none' : '';
 }
 
 function toast(msg) {
