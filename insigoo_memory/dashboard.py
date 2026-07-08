@@ -299,7 +299,9 @@ function showPanel(id) {
 
 function openFile(path) {
     if (!path) return;
-    fetch('/api/open?path=' + encodeURIComponent(path))
+    // 统一转正斜杠，避免反斜杠编码问题
+    const safe = path.replace(/\\/g, '/');
+    fetch('/api/open?path=' + encodeURIComponent(safe))
         .then(r => r.json())
         .then(d => {
             if (d.ok) {
