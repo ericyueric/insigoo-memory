@@ -6,10 +6,10 @@ from setuptools import setup, find_packages
 
 setup(
     name="insigoo-memory",
-    version="0.2.0",
+    version="0.3.0",
     description="公益组织 AI 知识管家",
     author="insigoo 因思阁",
-    packages=find_packages(),
+    packages=find_packages(exclude=["benchmarks", "benchmarks.*", "test_fixtures", "test_fixtures.*"]),
     entry_points={
         "console_scripts": [
             "insigoo-memory=insigoo_memory.cli:main",

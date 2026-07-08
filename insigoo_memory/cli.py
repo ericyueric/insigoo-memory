@@ -76,7 +76,10 @@ def cmd_init(args):
         for p in installed:
             print(f"   ✅ {p}")
 
-    # 生成日报
+    # 初始化语料索引
+    from .corpus import CorpusIndex
+    CorpusIndex(str(outdir.parent))._write_md({})
+    print(f"\n🧬 四级索引体系已就绪")
     from .assess import NewsFetcher
     nf = NewsFetcher()
     briefing = nf.daily_briefing(str(outdir.parent), issues)
@@ -251,6 +254,11 @@ def main():
     p_brief.add_argument('-w', '--watch')
     p_brief.add_argument('-i', '--issues', nargs='+')
 
+    p_corpus = sub.add_parser('corpus', help='语料索引')
+    p_corpus.add_argument('-w', '--watch')
+    p_corpus.add_argument('-q', '--question')
+    p_corpus.add_argument('-a', '--answer')
+
     args = parser.parse_args()
     if args.command == 'init': cmd_init(args)
     elif args.command == 'scan': cmd_scan(args)
@@ -258,7 +266,35 @@ def main():
     elif args.command == 'doctor': cmd_doctor(args)
     elif args.command == 'diagnose': cmd_diagnose(args)
     elif args.command == 'brief': cmd_brief(args)
+    elif args.command == 'corpus': cmd_corpus(args)
     else: parser.print_help()
+
+
+def cmd_corpus(args):
+    """语料索引: 记录问答 或 查看热路径"""
+    watch_dir = args.watch or os.getcwd()
+    from .corpus import CorpusIndex
+    ci = CorpusIndex(watch_dir)
+    if args.question and args.answer:
+        ci.record(args.question, args.answer)
+        print(f"✅ 已记录语料")
+    else:
+        hot = ci.hot_paths()
+        if hot:
+            print(f"\n🔥 热路径 ({len(hot)} 条):")
+            for k, v in hot[:10]:
+                print(f"   {v['count']}× {v['q'][:50]} → {v['file'][:40]}")
+        else:
+            print("暂无热路径（频次不足5）")
+
+def cmd_brief(args):
+    """行业日报"""
+    watch_dir = args.watch or os.getcwd()
+    from .assess import NewsFetcher
+    issues = args.issues or []
+    nf = NewsFetcher()
+    briefing = nf.daily_briefing(watch_dir, issues)
+    print(briefing)
 
 
 if __name__ == '__main__':
