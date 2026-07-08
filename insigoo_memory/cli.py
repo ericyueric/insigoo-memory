@@ -149,7 +149,11 @@ def cmd_dashboard(args):
 
     # 加载关联目录
     cfg_file = Path(watch_dir) / ".insigoo-memory" / "watched_dirs.json"
-    watched = json.loads(cfg_file.read_text(encoding="utf-8")) if cfg_file.exists() else [watch_dir]
+    if cfg_file.exists():
+        watched = json.loads(cfg_file.read_text(encoding="utf-8"))
+    else:
+        # 兜底：从 scan 数据或默认值
+        watched = [watch_dir]
 
     result_file = Path(watch_dir) / ".insigoo-memory" / "scan_result.json"
     if not result_file.exists():
