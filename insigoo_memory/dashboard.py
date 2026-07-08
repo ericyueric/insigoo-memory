@@ -13,6 +13,8 @@ class DashboardServer:
         self.primary = watch_dirs[0] if watch_dirs else os.getcwd()
         self.data_dir = Path(self.primary) / ".insigoo-memory"
         self.port = port
+        self.api_key = ""
+        self.api_provider = ""
 
     def start(self):
         self.data_dir.mkdir(exist_ok=True)
@@ -66,6 +68,10 @@ class DashboardServer:
                         self._json({"ok": True, "dir": d})
                     else:
                         self._json({"ok": False, "error": "目录不存在或已添加"})
+                elif self.path == "/api/set-key":
+                    outer.api_key = body.get("key", "")
+                    outer.api_provider = body.get("provider", "")
+                    self._json({"ok": True, "provider": outer.api_provider, "has_key": bool(outer.api_key)})
                 else:
                     self.send_response(404); self.end_headers()
 
@@ -104,8 +110,42 @@ class DashboardServer:
             json.dump(self.watch_dirs, f, ensure_ascii=False)
 
     def _diagnose(self, text: str) -> dict:
+        if self.api_key and self.api_provider:
+            return self._llm_diagnose(text)
         from .assess import Diagnostician
         return Diagnostician().assess(text)
+
+    def _llm_diagnose(self, text: str) -> dict:
+        import requests
+        base = self.api_provider.rstrip("/")
+        headers = {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"}
+        prompt = f"""你是公益项目评估专家。请诊断以下项目方案，按7项原则逐一评分（通过/未通过），最后给总评（优秀/良好/一般/需改进）。
+
+7项原则：
+1. 问题定义: 是否清楚定义了要解决的社会问题
+2. 目标清晰度: 目标是否SMART
+3. 受益人分析: 是否明确受益人群
+4. 活动逻辑: 活动是否与目标有因果关系
+5. 预算合理性: 预算是否详细合理
+6. 监测指标: 是否有可量化的监测指标
+7. 可持续性: 项目是否有长期规划
+
+项目内容:
+{text[:3000]}
+
+请用JSON格式回复: {{"verdict":"优秀/良好/一般/需改进","score":{{"pass":数字,"total":7}},"principles":[{{"status":"✅通过/❌未通过","name":"原则名","desc":"简短评语"}}],"suggestions":["建议1","建议2"]}}"""
+        try:
+            r = requests.post(f"{base}/chat/completions", headers=headers, timeout=30, json={
+                "model": "deepseek-chat", "messages": [{"role": "user", "content": prompt}],
+                "temperature": 0.3, "max_tokens": 1500
+            })
+            content = r.json()["choices"][0]["message"]["content"]
+            # 提取 JSON
+            import re
+            m = re.search(r'\{[\s\S]*\}', content)
+            return json.loads(m.group(0)) if m else {"verdict": "诊断失败", "score": {"pass": 0, "total": 7}, "principles": [], "suggestions": ["AI 返回格式异常，请重试"]}
+        except Exception as e:
+            return {"verdict": "API 调用失败", "score": {"pass": 0, "total": 7}, "principles": [], "suggestions": [f"错误: {str(e)[:100]}"]}
 
     def _build_interactive(self) -> str:
         dirs_json = json.dumps(self.watch_dirs, ensure_ascii=False)
@@ -190,11 +230,18 @@ h1{font-size:22px;margin-bottom:2px}.subtitle{color:#8b949e;font-size:12px;margi
 
 <!-- Diagnosis Panel -->
 <div class="panel" id="diag-panel" style="display:none">
-    <h3>📋 项目书诊断 (SIA L1 逻辑自洽)</h3>
-    <div class="diag-hint">
-        ⚠️ <strong>离线模式</strong>：诊断基于内置规则检查。<br>
-        如需 AI 深度分析，请在终端设置 LLM API Key：<br>
-        <code style="background:#0d1117;padding:2px 6px;border-radius:4px">ollama pull qwen2.5:7b</code> 启动本地模型，或设置 <code style="background:#0d1117;padding:2px 6px;border-radius:4px">DEEPSEEK_API_KEY</code> 环境变量。
+    <h3>📋 项目书诊断 (SIA L1)</h3>
+    <div class="diag-hint" id="diag-hint">
+        💡 <strong>配置 LLM API 获得 AI 深度分析</strong>（不配置则用离线规则）<br>
+        <select id="diag-provider" style="background:#0d1117;border:1px solid #30363d;color:#e1e4e8;padding:4px 8px;border-radius:4px;margin-top:6px;font-size:12px">
+            <option value="">离线规则</option>
+            <option value="https://api.deepseek.com/v1">DeepSeek</option>
+            <option value="https://tokenhub.tencentmaas.com/v1">TokenHub</option>
+            <option value="http://localhost:11434/v1">Ollama 本地</option>
+        </select>
+        <input type="password" id="diag-key" placeholder="API Key（留空用离线规则）" style="background:#0d1117;border:1px solid #30363d;color:#e1e4e8;padding:4px 8px;border-radius:4px;margin-top:6px;font-size:12px;width:300px">
+        <button class="btn-sm" onclick="setApiKey()">💾 保存</button>
+        <span id="key-status" style="font-size:11px;color:#8b949e;margin-left:8px"></span>
     </div>
     <textarea id="diag-input" placeholder="粘贴项目方案内容..."></textarea>
     <button class="btn" onclick="diagnose()">🔍 开始诊断</button>
@@ -209,13 +256,8 @@ h1{font-size:22px;margin-bottom:2px}.subtitle{color:#8b949e;font-size:12px;margi
 <div class="grid" id="grid"></div>
 
 <div class="footer">
-<h4>📜 知识产权说明</h4>
-<p>
 <strong>insigoo-memory</strong> 由因思阁(insigoo)自主开发。<br>
-<strong>借鉴的开源技术</strong>：Python标准库、Ollama、FAISS。<br>
-<strong>自研创新</strong>：9区NGO知识分类模型、SIA L1项目逻辑自洽评估框架(7原则)、12行业知识包体系、4级索引机制(目录/项目/场景/语料)。<br>
 <strong>联系</strong>：<a href="mailto:insigoo@insigoo.cn">insigoo@insigoo.cn</a>
-</p>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -357,6 +399,16 @@ async function diagnose() {
         ${d.principles.map(p => `<div class="${p.status.includes('通过')?'pass':'fail'}">${p.status} ${p.name}: ${p.desc}</div>`).join('')}
         ${d.suggestions?.length ? '<p style="margin-top:8px"><strong>💡 建议：</strong></p>'+d.suggestions.map(s=>`<div style="color:#d2991d">→ ${s}</div>`).join('') : ''}
     `;
+}
+
+async function setApiKey() {
+    const key = document.getElementById('diag-key').value.trim();
+    const provider = document.getElementById('diag-provider').value;
+    await fetch('/api/set-key', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({key, provider})
+    });
+    document.getElementById('key-status').textContent = provider ? '✅ LLM 已配置' : '📋 离线规则模式';
 }
 
 function toast(msg) {
