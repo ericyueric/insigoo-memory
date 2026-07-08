@@ -110,10 +110,10 @@ class DashboardServer:
             json.dump(self.watch_dirs, f, ensure_ascii=False)
 
     def _diagnose(self, text: str) -> dict:
-        if self.api_key and self.api_provider:
-            return self._llm_diagnose(text)
-        from .assess import Diagnostician
-        return Diagnostician().assess(text)
+        if not self.api_key:
+            return {"verdict": "请先配置 API Key", "score": {"pass": 0, "total": 7},
+                    "principles": [], "suggestions": ["请在上方选择 Provider 并填入 API Key，点击💾保存后再诊断"]}
+        return self._llm_diagnose(text)
 
     def _llm_diagnose(self, text: str) -> dict:
         import requests
@@ -232,9 +232,8 @@ h1{font-size:22px;margin-bottom:2px}.subtitle{color:#8b949e;font-size:12px;margi
 <div class="panel" id="diag-panel" style="display:none">
     <h3>📋 项目书诊断 (SIA L1)</h3>
     <div class="diag-hint" id="diag-hint">
-        💡 <strong>配置 LLM API 获得 AI 深度分析</strong>（不配置则用离线规则）<br>
+        💡 <strong>配置 LLM API 使用 AI 深度分析</strong><br>
         <select id="diag-provider" style="background:#0d1117;border:1px solid #30363d;color:#e1e4e8;padding:4px 8px;border-radius:4px;margin-top:6px;font-size:12px">
-            <option value="">离线规则</option>
             <option value="https://api.deepseek.com/v1">DeepSeek</option>
             <option value="https://tokenhub.tencentmaas.com/v1">TokenHub</option>
             <option value="http://localhost:11434/v1">Ollama 本地</option>
