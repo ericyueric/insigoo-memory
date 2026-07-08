@@ -268,7 +268,7 @@ function render() {
         const files = scanData[z.id] || [];
         if (Array.isArray(files)) { total += files.length; if (files.length > 0) filled++; }
         const list = Array.isArray(files) ? files.map(f => {
-            const fp = f.path || '';
+            const fp = (f.path || '').replace(/\\/g, '/');
             const name = f.name || '?';
             const displayPath = fp.length > 60 ? '...' + fp.slice(-57) : fp;
             return `<li>
