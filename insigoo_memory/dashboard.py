@@ -238,7 +238,7 @@ h1{font-size:22px;margin-bottom:2px}.subtitle{color:#8b949e;font-size:12px;margi
             <option value="https://tokenhub.tencentmaas.com/v1">TokenHub</option>
             <option value="http://localhost:11434/v1">Ollama 本地</option>
         </select>
-        <input type="password" id="diag-key" placeholder="API Key（留空用离线规则）" style="background:#0d1117;border:1px solid #30363d;color:#e1e4e8;padding:4px 8px;border-radius:4px;margin-top:6px;font-size:12px;width:300px">
+        <input type="password" id="diag-key" placeholder="API Key" style="background:#0d1117;border:1px solid #30363d;color:#e1e4e8;padding:4px 8px;border-radius:4px;margin-top:6px;font-size:12px;width:300px">
         <button class="btn-sm" onclick="setApiKey()">💾 保存</button>
         <span id="key-status" style="font-size:11px;color:#8b949e;margin-left:8px"></span>
     </div>
@@ -407,7 +407,7 @@ async function setApiKey() {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({key, provider})
     });
-    document.getElementById('key-status').textContent = provider ? '✅ LLM 已配置' : '📋 离线规则模式';
+    document.getElementById('key-status').textContent = provider ? '✅ LLM 已配置' : '⚠️ 请先配置 API Key';
 }
 
 function toast(msg) {
