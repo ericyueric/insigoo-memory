@@ -58,7 +58,7 @@ optional_dependencies:
 | 你要做的事 | 调用的底层能力 | 说明 |
 |-----------|--------------|------|
 | 搭建 SAG 知识库 | `insigoo-sag` 技能 + `insigoo-knowledge-base` 标准 | LLM Wiki 框架 + SAG 语义引擎 + 三层索引 |
-| 编译历史资料 | `insigoo-knowledge-base` 标准 + `GDTcreater` 技能 | 公益项目-披露分类 + **GDT-Core 要素结构+纪律（GDT-KB 适配）** |
+| 编译历史资料 | `insigoo-knowledge-base` 标准 + `GDTcreater`（未开源，本技能不依赖） 技能 | 公益项目-披露分类 + **GDT-Core 要素结构+纪律（GDT-KB 适配）** |
 | 诊断组织知识 | `insigoo-sia` 技能（L1）或本技能 `references/sia_core.md` | 逻辑自洽体检（L1） |
 
 ---
@@ -82,7 +82,7 @@ optional_dependencies:
 | # | 运行效果（用户要求） | 关键产出 | 依赖 |
 |---|---------------------|---------|------|
 | **能力一** | 搭建组织专属的 SAG 知识库 | 可运行的 LLM Wiki + SAG 语义检索环境、三层索引、维护规范 | `insigoo-sag`、`insigoo-knowledge-base` |
-| **能力二** | 按公益项目管理-披露标准编译历史资料 | 按披露标准归类的知识库、**受治理查询场景索引**（GDT-KB 六要素+六约束）、编译维护工作标准 | `insigoo-knowledge-base`、`GDTcreater` |
+| **能力二** | 按公益项目管理-披露标准编译历史资料 | 按披露标准归类的知识库、**受治理查询场景索引**（GDT-KB 六要素+六约束）、编译维护工作标准 | `insigoo-knowledge-base`、`GDTcreater`（未开源，本技能不依赖） |
 | **能力三** | 基于 SIA 标准诊断组织知识并给优化建议 | 知识健康度诊断报告 + 知识管理优化建议 | `insigoo-sia` |
 
 ---
@@ -175,7 +175,7 @@ optional_dependencies:
 
 #### 2.2.3 双适配：同一套 GDT-Core，两套落地
 
-| GDT-Core 要素 | GDT-DB（数据任务，现有 `GDTcreater`） | GDT-KB（知识任务，本技能） |
+| GDT-Core 要素 | GDT-DB（数据任务，现有 `GDTcreater`（未开源，本技能不依赖）） | GDT-KB（知识任务，本技能） |
 |--------------|------------------------------------|--------------------------|
 | ① 查询提示词 | `task_id` 场景 + `trigger_examples` | 知识查询场景自然语言问法（第 3 层 `question_examples`） |
 | ② 数据源 | PG `ai_secure` 安全视图 | SAG 受治理语料（2.1 七类索引区） |
@@ -184,7 +184,7 @@ optional_dependencies:
 | ⑤ 计算规范+报告框架 | SQL 计算 + 产物契约（TABLE/HTML/海报） | SAG 检索+编译 → 知识卡片/诊断报告框架 |
 | ⑥ 输出格式 | 输出格式参数（`runtime_customizable`） | 知识产物格式（引用文档/卡片/报告，带出处） |
 
-> 完整的六件套模板、负面清单、用户请求判定表，见可选依赖 `GDTcreater` 技能（含 GDT 标准提案）；GDT-Core 双层（要素 + 纪律）的完整设计见本技能 `references/gdt_design.md`。
+> 完整的六件套模板、负面清单、用户请求判定表，见可选依赖 `GDTcreater`（未开源，本技能不依赖） 技能（含 GDT 标准提案）；GDT-Core 双层（要素 + 纪律）的完整设计见本技能 `references/gdt_design.md`。
 
 ### 2.3 编译工作流
 
@@ -300,7 +300,7 @@ optional_dependencies:
 #### 2.5.4 GDT-KB 任务包如何创建（复用向导引擎，不另起炉灶）
 
 > **决策（"哪个稳用哪个"）**：GDT-KB **不新建独立向导**。理由——单一事实源、避免 DB/KB 双标准、降维护风险。
-> - 创建 KB 任务包时，**唯一向导引擎 = `GDTcreater` 的六件套创建纪律**（任务元数据→查询规范→映射证据→受控执行包→产物契约→验证证据）；
+> - 创建 KB 任务包时，**唯一向导引擎 = `GDTcreater`（未开源，本技能不依赖） 的六件套创建纪律**（任务元数据→查询规范→映射证据→受控执行包→产物契约→验证证据）；
 > - GDT-KB 只提供下方「KB 要素语义映射卡」，把六件套每个要素翻译成知识库语义；
 > - 落盘形态即 2.4 的契约 schema（yaml）。
 
@@ -312,7 +312,7 @@ optional_dependencies:
 | ④ 查询规范 | 检索范围/口径 | `query_spec` |
 | ⑤ 计算规范+报告框架 | SAG 检索+编译+报告框架 | `compute_and_report` |
 | ⑥ 输出格式 | 知识产物形态 | `output_format` |
-| 附 验证证据 | 核对方式/预期样例 | 维护于 `GDTcreater` 六件套⑤ |
+| 附 验证证据 | 核对方式/预期样例 | 维护于 `GDTcreater`（未开源，本技能不依赖） 六件套⑤ |
 
 > **示范任务包集（已随技能自带）**：归档于本技能 `references/gdt_kb_samples/`（15 个 `gdt_kb_sample_*.md` + `README.md` 索引表），按同 schema 复制改编即可。十五者完整呈现六要素+六约束+双模式注解+验证证据，覆盖公益组织十五大高频且敏感度递增的场景：
 > - **L1 低**：项目全周期披露（基线）
@@ -359,7 +359,7 @@ optional_dependencies:
 2. **编译维护 = GDT-Core 六约束纪律**：每一次历史资料编译都是一次"受治理任务"——受治理源、口径锁定、事实解读分离、版本不可覆盖、不确定即 BLOCKED、触发只路由。知识库因此从"文件夹"变成"有标准、可审计的生产系统"。
 3. **闭环**：SAG 负责"存得进、查得到"；GDT-KB 负责"查得准、管得住"；SIA 负责为组织知识"诊断得好、改得对"。三者经本技能编排形成组织知识管理的飞轮。
 
-> **GDT-KB 任务包创建（稳的选法）**：不另起向导，复用 `GDTcreater` 作为唯一六件套向导引擎，GDT-KB 只提供「KB 要素语义映射卡」（见 2.5.4）。落盘形态即 2.4 的契约 schema。
+> **GDT-KB 任务包创建（稳的选法）**：不另起向导，复用 `GDTcreater`（未开源，本技能不依赖） 作为唯一六件套向导引擎，GDT-KB 只提供「KB 要素语义映射卡」（见 2.5.4）。落盘形态即 2.4 的契约 schema。
 > **双模式（闲聊 vs GDT 触发）**：第 3 层索引经判定层区分两种入口，仅 GDT 触发场景加载 `locked_contract`，闲聊走灵活反应（见 2.5）。两者共用 SAG，差异只在"是否受治理契约管束"。
 
 ---
