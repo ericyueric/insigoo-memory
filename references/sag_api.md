@@ -1,6 +1,6 @@
 # SAG 语义检索 API 调用参考（insigoo-memory 自带）
 
-> 本文件内联 SAG 知识库引擎的核心 API 调用契约。使用者**不安装可选依赖 `knowledge-base-system` 也能照此调通语义检索**——这是本技能「自包含」承诺的一部分。完整部署/运维脚本（WSL PostgreSQL 初始化、向量库迁移、满月 Lint）仍见可选依赖。
+> 本文件内联 SAG 知识库引擎的核心 API 调用契约。使用者**不安装可选依赖 `insigoo-sag` 也能照此调通语义检索**——这是本技能「自包含」承诺的一部分。完整部署/运维脚本（WSL PostgreSQL 初始化、向量库迁移、满月 Lint）仍见可选依赖。
 
 ## 1. 服务与默认地址
 
@@ -20,7 +20,7 @@ ollama serve
 # 验证：curl http://127.0.0.1:11434/api/tags → 返回含 nomic-embed-text 的模型列表
 
 # ② 启动 PostgreSQL + pgvector（库 sag_lite，向量维度 768）
-#    Postgres 侧：pgvector 扩展 + sag_lite 库已建（建库脚本见可选依赖 knowledge-base-system）
+#    Postgres 侧：pgvector 扩展 + sag_lite 库已建（建库脚本见可选依赖 insigoo-sag）
 
 # ③ 启动 SAG API 服务（源码部署位置依环境而定，以下为默认本地路径示例）
 cd <sag 项目目录>
@@ -93,7 +93,7 @@ LLM_BASE_URL=http://127.0.0.1:11434/v1
 ## 6. 边界说明
 
 - 本文件给出**调用契约**（端点 + 请求体 + 流程），让客户能对接任意符合该契约的 SAG 部署；
-- 源码构建、WSL PG 初始化、向量库迁移、满月 Lint 巡检等**部署级运维**见可选依赖 `knowledge-base-system`；
+- 源码构建、WSL PG 初始化、向量库迁移、满月 Lint 巡检等**部署级运维**见可选依赖 `insigoo-sag`；
 - 若客户已有自建 SAG/向量检索服务，只要暴露等价 `/search`、`/ingest` 契约即可复用本技能的方法论。
 
 ---
