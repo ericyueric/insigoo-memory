@@ -91,3 +91,7 @@ insigoo-memory/
 免费开源技能，采用 **MIT 许可**：可自由使用、修改、分发与商用，须保留版权与许可声明。SIA 内联仅 L1 层，L2/L3 以开源 `insigoo-sia`（MIT）为准。
 
 *insigoo 因思阁 · 让每一个社会组织都有自己的、说得清也管得住的 SAG 知识库*
+
+## 相关开源仓库
+
+- [insigoo-knowledge-architect](https://github.com/ericyueric/insigoo-knowledge-architect) — 基于本方法论的「知识库架构师」通用 dsh agent 角色（开源 MIT，可适配任意行业组织）。
