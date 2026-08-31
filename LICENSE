@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2026 insigoo · 因思阁（广州市因思阁咨询有限公司）
+Copyright (c) 2026 insigoo (因思阁)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,9 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-本技能内置的 SIA 核心检查点（references/sia_core.md）对齐开源项目
-**insigoo-sia v1.2.0**（MIT，github.com/ericyueric），仅内联其 L1 逻辑自洽层；
-SIA 的 L2 指标量化层与 L3 价值核算层以该开源项目为准。
