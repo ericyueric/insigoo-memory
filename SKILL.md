@@ -406,7 +406,7 @@ optional_dependencies:
 > | 依赖技能名 | 公开仓库 | 状态 |
 > |---|---|---|
 > | `knowledge-base-system` | `github.com/ericyueric/insigoo-sag` | ✅ 开源 MIT |
-> | `insigoo-knowledge-base` | `github.com/ericyueric/insigoo-knowledge-base` | ✅ 开源 MIT |
+> | `insigoo-knowledge-base` | `github.com/ericyueric/insigoo-knowledge-base` | ✅ 开源 MIT（v2.0.0 通用版；2026-08-31 已合并原 `insigoo-agentic-rag`） |
 > | `insigoo-sia` | `github.com/ericyueric/insigoo-sia` | ✅ 开源 MIT |
 > | `GDTcreater` | 无 | ⚠️ insigoo 内部技能，未开源；本技能不依赖它 |
 >
