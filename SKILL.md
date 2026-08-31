@@ -2,7 +2,7 @@
 name: insigoo-memory
 version: 2.0.0
 description: 社会组织 SAG 知识库架构师 — 帮助社会组织搭建专属 SAG 知识库，按公益项目管理-披露标准编译历史资料，并基于 SIA 标准诊断组织知识、给出知识管理优化建议。适用于：搭建组织知识库、设计知识库索引系统、历史资料编译整理、公益项目知识诊断、组织知识管理优化。本技能不提供文件可视化看板，聚焦"建库 + 编译 + 诊断"三件事。
-author: insigoo · 因思阁（米斯蒂 & 虾米）
+author: insigoo · 广州市因思阁咨询有限公司
 trigger_keywords:
   - 搭建知识库
   - 组织知识库
@@ -36,7 +36,7 @@ disable-model-invocation: true
 # 安装后部分能力增强；不安装也能完整跑通「建库 + 编译 + 诊断」三件事。
 # 来源标注：[GH] = 有公开仓库可自行获取；[本地] = insigoo 内部技能，当前未开源。
 optional_dependencies:
-  - knowledge-base-system     # [可选][GH] SAG 引擎部署脚本 + 满月 Lint（能力一技术底座）→ github.com/ericyueric/insigoo-sag
+  - insigoo-sag     # [可选][GH] SAG 引擎部署脚本 + 满月 Lint（能力一技术底座）→ github.com/ericyueric/insigoo-sag
   - insigoo-knowledge-base    # [可选][GH] LLM Wiki 与三层索引扩展标准（本技能已内联核心）→ github.com/ericyueric/insigoo-knowledge-base
   - insigoo-sia               # [可选][GH] SIA 完整框架与指标集（本技能已内联 L1 核心）→ github.com/ericyueric/insigoo-sia
   - GDTcreater                # [可选][本地] GDT-DB 六件套向导，未开源；本技能 2.5.4 已含 KB 映射卡，无需依赖
@@ -57,7 +57,7 @@ optional_dependencies:
 
 | 你要做的事 | 调用的底层能力 | 说明 |
 |-----------|--------------|------|
-| 搭建 SAG 知识库 | `knowledge-base-system` 技能 + `insigoo-knowledge-base` 标准 | LLM Wiki 框架 + SAG 语义引擎 + 三层索引 |
+| 搭建 SAG 知识库 | `insigoo-sag` 技能 + `insigoo-knowledge-base` 标准 | LLM Wiki 框架 + SAG 语义引擎 + 三层索引 |
 | 编译历史资料 | `insigoo-knowledge-base` 标准 + `GDTcreater` 技能 | 公益项目-披露分类 + **GDT-Core 要素结构+纪律（GDT-KB 适配）** |
 | 诊断组织知识 | `insigoo-sia` 技能（L1）或本技能 `references/sia_core.md` | 逻辑自洽体检（L1） |
 
@@ -81,7 +81,7 @@ optional_dependencies:
 
 | # | 运行效果（用户要求） | 关键产出 | 依赖 |
 |---|---------------------|---------|------|
-| **能力一** | 搭建组织专属的 SAG 知识库 | 可运行的 LLM Wiki + SAG 语义检索环境、三层索引、维护规范 | `knowledge-base-system`、`insigoo-knowledge-base` |
+| **能力一** | 搭建组织专属的 SAG 知识库 | 可运行的 LLM Wiki + SAG 语义检索环境、三层索引、维护规范 | `insigoo-sag`、`insigoo-knowledge-base` |
 | **能力二** | 按公益项目管理-披露标准编译历史资料 | 按披露标准归类的知识库、**受治理查询场景索引**（GDT-KB 六要素+六约束）、编译维护工作标准 | `insigoo-knowledge-base`、`GDTcreater` |
 | **能力三** | 基于 SIA 标准诊断组织知识并给优化建议 | 知识健康度诊断报告 + 知识管理优化建议 | `insigoo-sia` |
 
@@ -102,18 +102,18 @@ optional_dependencies:
 | 档位 | 组成 | 适用 | 来源 |
 |------|------|------|------|
 | **轻量档** | LLM Wiki 标准 + 三层索引（纯 Markdown，无向量） | 文档 < 20 篇、非技术组织 | `insigoo-knowledge-base` |
-| **标准档** | 轻量档 + SAG 语义检索（本地 Ollama 向量库） | 文档 50–200 篇、需语义问答 | `knowledge-base-system` §3.2 |
-| **完整档** | 标准档 + Hy-Memory 对话记忆 + 飞书/企微同步 + 满月四层 Lint | 中大型组织、需团队云端共享 | `knowledge-base-system` §3.3–§3.4、满月 Lint |
+| **标准档** | 轻量档 + SAG 语义检索（本地 Ollama 向量库） | 文档 50–200 篇、需语义问答 | `insigoo-sag` §3.2 |
+| **完整档** | 标准档 + Hy-Memory 对话记忆 + 飞书/企微同步 + 满月四层 Lint | 中大型组织、需团队云端共享 | `insigoo-sag` §3.3–§3.4、满月 Lint |
 
 ### 1.3 工作流（5 步）
 
 1. **初始化结构**：按本技能 `references/wiki_structure.md` 建立 `wiki/` 目录骨架（projects / org / methods / cases / resources / daily），写入 `knowledge_index.md`（用 `references/knowledge_index_template.md` 三层索引模板）。
 2. **制定编写规范**：套用本技能 `references/llm_wiki_standard.md` 的五大原则（纯 Markdown、结构化标题、元信息前置、原子化、可链接），给组织一份《知识库编写规范》。
-3. **部署检索引擎**（标准档/完整档）：拉起 SAG 语义检索——PostgreSQL+pgvector 存向量、Ollama 跑 nomic-embed-text 嵌入、Node 跑 SAG API（:4173）；执行 `batch_ingest` 将 `wiki/` 逐篇 `POST /ingest` 入库。**语义检索 API 调用契约（端点 / 请求体 / 启动 / 配置）已内联于本技能 `references/sag_api.md`**（含 `/health`、`/api/sources`、`/search`、`/ingest` 四个核心端点），客户不装可选依赖也能调通；完整源码部署/运维脚本见可选依赖 `knowledge-base-system`。
-4. **建立维护节奏**：按本技能 `references/maintenance_guide.md` 落地"写入即索引、不存废弃、命名带日期、一人负责"四原则；完整档接入满月四层 Lint 巡检（来自可选依赖 `knowledge-base-system`）。
+3. **部署检索引擎**（标准档/完整档）：拉起 SAG 语义检索——PostgreSQL+pgvector 存向量、Ollama 跑 nomic-embed-text 嵌入、Node 跑 SAG API（:4173）；执行 `batch_ingest` 将 `wiki/` 逐篇 `POST /ingest` 入库。**语义检索 API 调用契约（端点 / 请求体 / 启动 / 配置）已内联于本技能 `references/sag_api.md`**（含 `/health`、`/api/sources`、`/search`、`/ingest` 四个核心端点），客户不装可选依赖也能调通；完整源码部署/运维脚本见可选依赖 `insigoo-sag`。
+4. **建立维护节奏**：按本技能 `references/maintenance_guide.md` 落地"写入即索引、不存废弃、命名带日期、一人负责"四原则；完整档接入满月四层 Lint 巡检（来自可选依赖 `insigoo-sag`）。
 5. **验收**：跑通"一条自然语言提问 → 正确召回文档"的最小闭环，确认索引与向量层一致。
 
-> SAG 部署为技术底座，语义检索 API 调用契约（端点/请求体/启动/配置）已内联于本技能 `references/sag_api.md`，客户不装可选依赖也能调通；源码构建与运维脚本见可选依赖 `knowledge-base-system`。
+> SAG 部署为技术底座，语义检索 API 调用契约（端点/请求体/启动/配置）已内联于本技能 `references/sag_api.md`，客户不装可选依赖也能调通；源码构建与运维脚本见可选依赖 `insigoo-sag`。
 
 ---
 
@@ -143,14 +143,14 @@ optional_dependencies:
 ### 2.2 编译维护工作标准（GDT-Core：要素结构 + 纪律约束 双层）
 
 > 关键澄清：**GDT 标准由两层构成，通用化时必须同时承载，缺一不可**：
-> - **结构层（要素）**——一套知识/数据任务包"由什么组成"。GDT 正本 v1.0 定义为「六件套」，也就是小鱼记忆里的 6 个关键要素：**查询提示词、数据源、知识库/映射表、查询规范、计算规范和报告框架、输出格式**（验证证据作质量护栏贯穿）。
+> - **结构层（要素）**——一套知识/数据任务包"由什么组成"。GDT 正本 v1.0 定义为「六件套」，也就是GDT 的 6 个关键要素：**查询提示词、数据源、知识库/映射表、查询规范、计算规范和报告框架、输出格式**（验证证据作质量护栏贯穿）。
 > - **纪律层（约束）**——这些要素在构建/运行时"不可违背的红线"，即 6 核心约束（受治理源 / 锁定契约 / 事实解读分离 / 版本不可覆盖 / 不猜测 / 触发只路由）。
 >
 > 上一轮我们把 GDT 抽象成"6 约束治理红线"，那只是纪律层；**要素结构层才是 GDT 的正身骨架**。通用化内核 GDT-Core 必须同时承载这两层。
 
-#### 2.2.1 GDT-Core 要素结构（通用化六件套，对齐小鱼的 6 要素）
+#### 2.2.1 GDT-Core 要素结构（通用化六件套，对齐 GDT 的 6 要素）
 
-| # | GDT-Core 要素 | 小鱼的叫法 | 含义（v1.0 出处） |
+| # | GDT-Core 要素 | GDT 的叫法 | 含义（v1.0 出处） |
 |---|--------------|-----------|------------------|
 | ① | 查询提示词 / 触发 | 查询提示词 | 用户在什么自然语言问法下触发此任务；≥3 条示例（v1.0 §3① + v1.1 §19 `trigger_examples`） |
 | ② | 数据源 | 数据源 | 任务可查询的受治理语料/数据范围；禁裸源、禁猜字段（v1.0 §3②④ + §5/§6） |
@@ -196,7 +196,7 @@ optional_dependencies:
 
 ### 2.4 查询场景索引的 GDT-KB 六要素治理（第 3 层升级核心）
 
-第 3 层「提问场景索引」是知识库的**查询场景索引层**。用 **GDT-KB 六要素**（来自 GDT-Core 要素结构层）把每个高频查询场景，从"问题→路径"朴素表升级为一份**受治理知识查询任务**——同时受 6 约束（纪律层，见 2.2.2）守护。这正是小鱼说的"用 GDT 的要素/踩坑去升级知识库索引机制"的落点。
+第 3 层「提问场景索引」是知识库的**查询场景索引层**。用 **GDT-KB 六要素**（来自 GDT-Core 要素结构层）把每个高频查询场景，从"问题→路径"朴素表升级为一份**受治理知识查询任务**——同时受 6 约束（纪律层，见 2.2.2）守护。这正是"用 GDT 的要素/踩坑去升级知识库索引机制"的落点。
 
 **契约 schema（每个场景条目，按 GDT-KB 六要素组织）**：
 
@@ -299,7 +299,7 @@ optional_dependencies:
 
 #### 2.5.4 GDT-KB 任务包如何创建（复用向导引擎，不另起炉灶）
 
-> **决策（小鱼拍板"哪个稳用哪个"）**：GDT-KB **不新建独立向导**。理由——单一事实源、避免 DB/KB 双标准、降维护风险。
+> **决策（"哪个稳用哪个"）**：GDT-KB **不新建独立向导**。理由——单一事实源、避免 DB/KB 双标准、降维护风险。
 > - 创建 KB 任务包时，**唯一向导引擎 = `GDTcreater` 的六件套创建纪律**（任务元数据→查询规范→映射证据→受控执行包→产物契约→验证证据）；
 > - GDT-KB 只提供下方「KB 要素语义映射卡」，把六件套每个要素翻译成知识库语义；
 > - 落盘形态即 2.4 的契约 schema（yaml）。
@@ -349,8 +349,8 @@ optional_dependencies:
 
 ## GDT 如何赋能知识库（GDT-Core 通用治理内核 × GDT-KB 适配）
 
-> 关键认知：**GDT 标准不是数据库专属**。它由两层构成——**要素结构层（六件套：查询提示词 / 数据源 / 知识库映射表 / 查询规范 / 计算规范+报告框架 / 输出格式，即小鱼记忆里的 6 个关键要素）** 与 **纪律约束层（6 核心约束：受治理源 / 锁定契约 / 事实解读分离 / 版本不可覆盖 / 不猜测 / 触发只路由）**。两层都来自 AI 查询生产环境踩过的坑，场景无关。v2.0 起，GDT 升级为 **GDT-Core（通用治理内核，承载要素+纪律双层）+ 双适配**：
-> - `GDT-DB`（数据任务适配）← 现有 `GDTcreater` 范畴（结构化产品库、SQL 视图、六件套），codax 域；
+> 关键认知：**GDT 标准不是数据库专属**。它由两层构成——**要素结构层（六件套：查询提示词 / 数据源 / 知识库映射表 / 查询规范 / 计算规范+报告框架 / 输出格式，即GDT 的 6 个关键要素）** 与 **纪律约束层（6 核心约束：受治理源 / 锁定契约 / 事实解读分离 / 版本不可覆盖 / 不猜测 / 触发只路由）**。两层都来自 AI 查询生产环境踩过的坑，场景无关。v2.0 起，GDT 升级为 **GDT-Core（通用治理内核，承载要素+纪律双层）+ 双适配**：
+> - `GDT-DB`（数据任务适配）← 现有 `GDTcreater`（未开源，本技能不依赖）范畴（结构化产品库、SQL 视图、六件套），数据域；
 > - `GDT-KB`（知识任务适配）← 本技能范畴，把 GDT-Core 双层层施用于知识库**查询场景索引（见 2.4）**与**编译维护（见 2.2）**。
 
 这是 v2.0 的"赋能内核"，把 GDT-Core 从数据产品平移到知识库场景：
@@ -373,7 +373,7 @@ optional_dependencies:
 - 已发布的编译标准/模板/索引版本不可覆盖，修订须升版本（对应 GDT-Core ④）。
 - SIA 诊断须用真实资料，不得替组织"美化"逻辑链或证据等级；诊断即学习工具，非审判。
 - 涉及受益人隐私、未公开财务，默认本地化、不进公开同步层。
-- 本技能不提供可视化看板/自动 9 区分类/日程提醒（v1.x 已移除），相关诉求转 `knowledge-base-system` 或 `insigoo-knowledge-base`。
+- 本技能不提供可视化看板/自动 9 区分类/日程提醒（v1.x 已移除），相关诉求转 `insigoo-sag` 或 `insigoo-knowledge-base`。
 
 ---
 
@@ -396,8 +396,8 @@ optional_dependencies:
 | 要做什么 | 看哪里（均为本技能自带或可选依赖） |
 |---------|--------|
 | 建库索引骨架、LLM Wiki 标准、三层索引、维护节奏 | 本技能 `references/wiki_structure.md`、`llm_wiki_standard.md`、`three_layer_index.md`、`knowledge_index_template.md`、`maintenance_guide.md` |
-| SAG 引擎部署、满月 Lint、飞书同步（完整脚本） | 可选依赖 `knowledge-base-system` ｜ 开源仓库 `ericyueric/insigoo-sag` |
-| SAG 语义检索 API 调用（/health、/api/sources、/search、/ingest 端点与示例） | 本技能 `references/sag_api.md`（完整部署脚本见可选依赖 `knowledge-base-system`） |
+| SAG 引擎部署、满月 Lint、飞书同步（完整脚本） | 可选依赖 `insigoo-sag` ｜ 开源仓库 `ericyueric/insigoo-sag` |
+| SAG 语义检索 API 调用（/health、/api/sources、/search、/ingest 端点与示例） | 本技能 `references/sag_api.md`（完整部署脚本见可选依赖 `insigoo-sag`） |
 | GDT-Core 双层（要素+纪律）、双模式、双适配设计 | 本技能 `references/gdt_design.md` |
 | GDT 六件套、v1.1 负面清单/判定表（GDT-DB 增强） | 可选依赖 `GDTcreater`（**未开源**，insigoo 内部技能）/ `insigoo-knowledge-base`（含 GDT 标准提案，开源） |
 | SIA L1 逻辑自洽体检（自带核心） | 本技能 `references/sia_core.md`（完整 L1/L2/L3 框架见开源 `insigoo-sia`，MIT） |
@@ -405,12 +405,11 @@ optional_dependencies:
 > **可选依赖来源对照**（避免按图索骥扑空）：
 > | 依赖技能名 | 公开仓库 | 状态 |
 > |---|---|---|
-> | `knowledge-base-system` | `github.com/ericyueric/insigoo-sag` | ✅ 开源 MIT |
+> | `insigoo-sag` | `github.com/ericyueric/insigoo-sag` | ✅ 开源 MIT |
 > | `insigoo-knowledge-base` | `github.com/ericyueric/insigoo-knowledge-base` | ✅ 开源 MIT（v2.0.0 通用版；2026-08-31 已合并原 `insigoo-agentic-rag`） |
 > | `insigoo-sia` | `github.com/ericyueric/insigoo-sia` | ✅ 开源 MIT |
 > | `GDTcreater` | 无 | ⚠️ insigoo 内部技能，未开源；本技能不依赖它 |
 >
-> 注：`knowledge-base-system` 为本地技能名，其公开仓库名为 `insigoo-sag`，两者是同一套 SAG 引擎。
 | 15 示范任务包集 | 本技能 `references/gdt_kb_samples/` |
 
 ---
