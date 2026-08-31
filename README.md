@@ -24,12 +24,11 @@
 
 | 依赖 | 增强内容 | 获取方式 |
 |------|---------|---------|
-| `knowledge-base-system` | SAG 引擎完整部署脚本 + 满月 Lint（能力一技术底座） | 开源 `github.com/ericyueric/insigoo-sag` |
+| `insigoo-sag` | SAG 引擎完整部署脚本 + 满月 Lint（能力一技术底座） | 开源 `github.com/ericyueric/insigoo-sag` |
 | `insigoo-knowledge-base` | LLM Wiki 与三层索引扩展标准（本技能已内联核心） | 开源 `github.com/ericyueric/insigoo-knowledge-base` |
 | `insigoo-sia` | SIA 完整 L1/L2/L3 框架（本技能 `sia_core.md` 已内联 L1 核心；指标量化 L2 / 价值核算 L3 以该开源技能为准） | 开源 `github.com/ericyueric/insigoo-sia` |
 | `GDTcreater` | GDT-DB 六件套向导（本技能 2.5.4 已含 KB 映射卡，可手动建包） | ⚠️ 未开源（insigoo 内部技能），本技能不依赖 |
 
-> 注：`knowledge-base-system` 为本地技能名，其公开仓库名为 `insigoo-sag`，两者指同一套 SAG 引擎。
 
 ---
 
