@@ -1,9 +1,9 @@
+.DS_Store
+Thumbs.db
+*.tmp
+*.log
+.env
+.idea/
+.vscode/
 __pycache__/
 *.pyc
-*.egg-info/
-.env
-.venv/
-dist/
-build/
-.insigoo-memory/
-*.zip
