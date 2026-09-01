@@ -1,7 +1,7 @@
 # GDT-KB 示范任务包 · 某年度财务披露汇总检索
 
 > **用途**：`insigoo-memory`（GDT-KB 适配）的第三个**可运行示范任务包**，展示如何把"对外财务披露"这类**高敏感、强合规**查询用「受治理查询场景索引」六要素 schema 固化成查询契约——这是双模式中**最该走 GDT 触发**的场景。
-> **创建纪律**：遵循 `GDTcreater` 六件套引擎（任务元数据→查询规范→映射证据→受控执行包→产物契约→验证证据），按 GDT-KB 语义映射落盘（见 `insigoo-memory` 2.5.4）。
+> **创建纪律**：遵循 `GDTcreater（未开源，本技能不依赖）` 六件套引擎（任务元数据→查询规范→映射证据→受控执行包→产物契约→验证证据），按 GDT-KB 语义映射落盘（见 `insigoo-memory` 2.5.4）。
 > **对应标准**：`three_layer_index.md` v1.1 第 3 层 schema；`insigoo-memory` 2.4 契约。
 > **双模式**：本任务包是**受治理（GDT 触发）**场景；财务对外披露**不建议走闲聊**（见末尾双模式注解）。
 > **系列位置**：与 `gdt_kb_sample_project_full_disclosure.md`（项目全周期披露）、`gdt_kb_sample_beneficiary_evaluation.md`（受益群体评估）同属 GDT-KB 示范包集。
@@ -117,7 +117,7 @@
 
 ---
 
-## 4. 验证证据（GDTcreater 第六件套 · 核对方式）
+## 4. 验证证据（GDTcreater（未开源，本技能不依赖） 第六件套 · 核对方式）
 
 - **动作**：用 `rag_helper.py --query "2025 年所有财务披露材料汇总"` 跑一次；
 - **预期**：返回结果**全部**落在 `budget/income/expense/audit/public_report` 五类路径内，且每条金额都带源文件出处；
