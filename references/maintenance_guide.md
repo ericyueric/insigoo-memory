@@ -145,7 +145,7 @@ SAG 返回结构化结果，典型字段：
 
 ### 4.5 双模式检索规范（GDT 触发 vs 闲聊）
 
-> v1.1 回灌（来源：insigoo-memory GDT 通用化）：知识库查询分两种入口，反应规则不同。详见 `three_layer_index.md` 第 3 层 §3.1。
+> v1.1 回灌（来源：insigoo-sag-architect GDT 通用化）：知识库查询分两种入口，反应规则不同。详见 `three_layer_index.md` 第 3 层 §3.1。
 
 **判定层**：用户问题先与 `knowledge_index.md` 第 3 层已发布场景的 `question_examples` 做语义匹配——
 - **命中 → GDT 触发模式（受治理）**：必须按该场景的 `locked_contract` 执行：仅检索 `source_scope` 受治理语料、引用必带出处、无命中答 `BLOCKED` 不编造、输出符合 `output_format`。**对外披露/合规/敏感口径一律走此模式**。
