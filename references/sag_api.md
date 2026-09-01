@@ -1,4 +1,4 @@
-# SAG 语义检索 API 调用参考（insigoo-memory 自带）
+# SAG 语义检索 API 调用参考（insigoo-sag-architect 自带）
 
 > 本文件内联 SAG 知识库引擎的核心 API 调用契约。使用者**不安装可选依赖 `insigoo-sag` 也能照此调通语义检索**——这是本技能「自包含」承诺的一部分。完整部署/运维脚本（WSL PostgreSQL 初始化、向量库迁移、知识库质量巡检（Lint））仍见可选依赖。
 
