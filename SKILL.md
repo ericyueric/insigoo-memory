@@ -36,7 +36,7 @@ disable-model-invocation: true
 # 安装后部分能力增强；不安装也能完整跑通「建库 + 编译 + 诊断」三件事。
 # 来源标注：[GH] = 有公开仓库可自行获取；[本地] = insigoo 内部技能，当前未开源。
 optional_dependencies:
-  - insigoo-sag     # [可选][GH] SAG 引擎部署脚本 + 满月 Lint（能力一技术底座）→ github.com/ericyueric/insigoo-sag
+  - insigoo-sag     # [可选][GH] SAG 引擎部署脚本 + 满月 Lint（知识库质量巡检，insigoo 内部代号，可替换）（能力一技术底座）→ github.com/ericyueric/insigoo-sag
   - insigoo-knowledge-base    # [可选][GH] LLM Wiki 与三层索引扩展标准（本技能已内联核心）→ github.com/ericyueric/insigoo-knowledge-base
   - insigoo-sia               # [可选][GH] SIA 完整框架与指标集（本技能已内联 L1 核心）→ github.com/ericyueric/insigoo-sia
   - GDTcreater                # [可选][本地] GDT-DB 六件套向导，未开源；本技能 2.5.4 已含 KB 映射卡，无需依赖
@@ -103,14 +103,14 @@ optional_dependencies:
 |------|------|------|------|
 | **轻量档** | LLM Wiki 标准 + 三层索引（纯 Markdown，无向量） | 文档 < 20 篇、非技术组织 | `insigoo-knowledge-base` |
 | **标准档** | 轻量档 + SAG 语义检索（本地 Ollama 向量库） | 文档 50–200 篇、需语义问答 | `insigoo-sag` §3.2 |
-| **完整档** | 标准档 + Hy-Memory 对话记忆 + 飞书/企微同步 + 满月四层 Lint | 中大型组织、需团队云端共享 | `insigoo-sag` §3.3–§3.4、满月 Lint |
+| **完整档** | 标准档 + Hy-Memory 对话记忆 + 飞书/企微同步 + 满月四层 Lint（insigoo 内部代号，可替换） | 中大型组织、需团队云端共享 | `insigoo-sag` §3.3–§3.4、满月 Lint（知识库质量巡检，insigoo 内部代号，可替换） |
 
 ### 1.3 工作流（5 步）
 
 1. **初始化结构**：按本技能 `references/wiki_structure.md` 建立 `wiki/` 目录骨架（projects / org / methods / cases / resources / daily），写入 `knowledge_index.md`（用 `references/knowledge_index_template.md` 三层索引模板）。
 2. **制定编写规范**：套用本技能 `references/llm_wiki_standard.md` 的五大原则（纯 Markdown、结构化标题、元信息前置、原子化、可链接），给组织一份《知识库编写规范》。
 3. **部署检索引擎**（标准档/完整档）：拉起 SAG 语义检索——PostgreSQL+pgvector 存向量、Ollama 跑 nomic-embed-text 嵌入、Node 跑 SAG API（:4173）；执行 `batch_ingest` 将 `wiki/` 逐篇 `POST /ingest` 入库。**语义检索 API 调用契约（端点 / 请求体 / 启动 / 配置）已内联于本技能 `references/sag_api.md`**（含 `/health`、`/api/sources`、`/search`、`/ingest` 四个核心端点），客户不装可选依赖也能调通；完整源码部署/运维脚本见可选依赖 `insigoo-sag`。
-4. **建立维护节奏**：按本技能 `references/maintenance_guide.md` 落地"写入即索引、不存废弃、命名带日期、一人负责"四原则；完整档接入满月四层 Lint 巡检（来自可选依赖 `insigoo-sag`）。
+4. **建立维护节奏**：按本技能 `references/maintenance_guide.md` 落地"写入即索引、不存废弃、命名带日期、一人负责"四原则；完整档接入满月四层 Lint（insigoo 内部代号，可替换） 巡检（来自可选依赖 `insigoo-sag`）。
 5. **验收**：跑通"一条自然语言提问 → 正确召回文档"的最小闭环，确认索引与向量层一致。
 
 > SAG 部署为技术底座，语义检索 API 调用契约（端点/请求体/启动/配置）已内联于本技能 `references/sag_api.md`，客户不装可选依赖也能调通；源码构建与运维脚本见可选依赖 `insigoo-sag`。
@@ -396,7 +396,7 @@ optional_dependencies:
 | 要做什么 | 看哪里（均为本技能自带或可选依赖） |
 |---------|--------|
 | 建库索引骨架、LLM Wiki 标准、三层索引、维护节奏 | 本技能 `references/wiki_structure.md`、`llm_wiki_standard.md`、`three_layer_index.md`、`knowledge_index_template.md`、`maintenance_guide.md` |
-| SAG 引擎部署、满月 Lint、飞书同步（完整脚本） | 可选依赖 `insigoo-sag` ｜ 开源仓库 `ericyueric/insigoo-sag` |
+| SAG 引擎部署、满月 Lint（知识库质量巡检，insigoo 内部代号，可替换）、飞书同步（完整脚本） | 可选依赖 `insigoo-sag` ｜ 开源仓库 `ericyueric/insigoo-sag` |
 | SAG 语义检索 API 调用（/health、/api/sources、/search、/ingest 端点与示例） | 本技能 `references/sag_api.md`（完整部署脚本见可选依赖 `insigoo-sag`） |
 | GDT-Core 双层（要素+纪律）、双模式、双适配设计 | 本技能 `references/gdt_design.md` |
 | GDT 六件套、v1.1 负面清单/判定表（GDT-DB 增强） | 可选依赖 `GDTcreater`（**未开源**，insigoo 内部技能）/ `insigoo-knowledge-base`（含 GDT 标准提案，开源） |
