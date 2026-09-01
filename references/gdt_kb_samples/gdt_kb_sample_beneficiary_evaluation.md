@@ -1,7 +1,7 @@
 # GDT-KB 示范任务包 · 某受益群体全部评估记录检索
 
 > **用途**：`insigoo-memory`（GDT-KB 适配）的第二个**可运行示范任务包**，展示如何把"按受益群体维系的评估资料"用「受治理查询场景索引」六要素 schema 固化成一个可复用查询契约。
-> **创建纪律**：遵循 `GDTcreater` 六件套引擎（任务元数据→查询规范→映射证据→受控执行包→产物契约→验证证据），按 GDT-KB 语义映射落盘（见 `insigoo-memory` 2.5.4）。
+> **创建纪律**：遵循 `GDTcreater（未开源，本技能不依赖）` 六件套引擎（任务元数据→查询规范→映射证据→受控执行包→产物契约→验证证据），按 GDT-KB 语义映射落盘（见 `insigoo-memory` 2.5.4）。
 > **对应标准**：`three_layer_index.md` v1.1 第 3 层 schema；`insigoo-memory` 2.4 契约。
 > **双模式**：本任务包是**受治理（GDT 触发）**场景；闲聊/自由查询不加载本契约（见末尾双模式注解）。
 > **系列位置**：与 `gdt_kb_sample_project_full_disclosure.md`（项目全周期披露）、`gdt_kb_sample_finance_year_disclosure.md`（年度财务披露）同属 GDT-KB 示范包集。
@@ -116,7 +116,7 @@
 
 ---
 
-## 4. 验证证据（GDTcreater 第六件套 · 核对方式）
+## 4. 验证证据（GDTcreater（未开源，本技能不依赖） 第六件套 · 核对方式）
 
 - **动作**：用 `rag_helper.py --query "留守儿童 从基线到终期的所有评估记录"` 跑一次；
 - **预期**：返回结果**全部**落在 `beneficiary_profile/baseline_survey/evaluation/satisfaction` 四类路径内，且每条带文件出处；
