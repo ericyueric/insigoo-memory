@@ -1,8 +1,8 @@
 # GDT-KB 示范任务包 · 人事与志愿者档案检索
 
 > **用途**：GDT-KB 适配示范样本之一，用「受治理查询场景索引」六要素 schema 落地「员工/志愿者档案检索」高频且含个人信息（PII）的场景。
-> **创建纪律**：遵循 `GDTcreater（未开源，本技能不依赖）` 六件套引擎，按 GDT-KB 语义映射落盘（见 `insigoo-memory` 2.5.4）。
-> **对应标准**：`three_layer_index.md` v1.1 第 3 层 schema；`insigoo-memory` 2.4 契约。
+> **创建纪律**：遵循 `GDTcreater（未开源，本技能不依赖）` 六件套引擎，按 GDT-KB 语义映射落盘（见 `insigoo-sag-architect` 2.5.4）。
+> **对应标准**：`three_layer_index.md` v1.1 第 3 层 schema；`insigoo-sag-architect` 2.4 契约。
 > **双模式**：本任务包是**受治理（GDT 触发）**场景；本场景**最该强制走 GDT 触发**——查询个人信息须权限校验，闲聊绝不提供（见末尾双模式注解）。
 
 ---
