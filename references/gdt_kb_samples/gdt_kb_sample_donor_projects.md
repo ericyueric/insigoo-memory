@@ -1,7 +1,7 @@
 # GDT-KB 示范任务包 · 某捐赠方全部项目披露检索
 
 > **用途**：GDT-KB 适配示范样本之一，用「受治理查询场景索引」六要素 schema 落地「某捐赠方参与的所有项目/资助披露检索」高频场景。
-> **创建纪律**：遵循 `GDTcreater` 六件套引擎，按 GDT-KB 语义映射落盘（见 `insigoo-memory` 2.5.4）。
+> **创建纪律**：遵循 `GDTcreater（未开源，本技能不依赖）` 六件套引擎，按 GDT-KB 语义映射落盘（见 `insigoo-memory` 2.5.4）。
 > **对应标准**：`three_layer_index.md` v1.1 第 3 层 schema；`insigoo-memory` 2.4 契约。
 > **双模式**：本任务包是**受治理（GDT 触发）**场景；闲聊/自由查询不加载本契约（见末尾双模式注解）。
 
@@ -109,7 +109,7 @@
 
 ---
 
-## 4. 验证证据（GDTcreater 第六件套 · 核对方式）
+## 4. 验证证据（GDTcreater（未开源，本技能不依赖） 第六件套 · 核对方式）
 
 - **动作**：用 `rag_helper.py --query "守望者公益基金会 投了我们哪些项目"` 跑一次；
 - **预期**：返回结果**全部**带 `donor = 守望者公益基金会` 过滤，落在 `projects/finance/grants/reports/donor/contracts/grant` 路径内，且每条带文件出处；
