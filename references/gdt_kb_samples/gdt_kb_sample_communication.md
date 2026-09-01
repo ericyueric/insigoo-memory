@@ -97,21 +97,21 @@
 
 ## 3. 填参示例（让样本"可运行"）
 
-把 `open_params` 代入：`主题/事项 = 河流守望者计划`：
+把 `open_params` 代入：`主题/事项 = 示例项目`：
 
 - `query_spec.filter` 解析为 `approved_only = true`（对外使用仅取审批版）；
 - `mapping_table` 解析为：
-  - `communication/press/河流守望者计划_新闻稿.md`
-  - `communication/brand/河流守望者计划_品牌素材.md`
-  - `communication/approved-statements/河流守望者计划_口径.md`
-  - `media/assets/河流守望者计划_素材`
+  - `communication/press/示例项目_新闻稿.md`
+  - `communication/brand/示例项目_品牌素材.md`
+  - `communication/approved-statements/示例项目_口径.md`
+  - `media/assets/示例项目_素材`
 - 命中任一 `question_examples` 语义 → 加载本契约 → 仅取审批版受治理语料 → 必带版本出处 → 无命中答 BLOCKED。
 
 ---
 
 ## 4. 验证证据（GDTcreater（未开源，本技能不依赖） 第六件套 · 核对方式）
 
-- **动作**：用 `rag_helper.py --query "我们对外怎么介绍河流守望者计划的"` 跑一次；
+- **动作**：用 SAG 检索 API 验证——`curl -X POST http://127.0.0.1:4173/search -d '{"query":"我们对外怎么介绍示例项目的","top_k":5}'` 跑一次；
 - **预期**：返回结果**全部**为审批版（`approved_only = true`），带版本号与出处，且**不出现**未审批草稿内容；
 - **反例（应被拦截）**：若返回了草稿/过期版/被撤销版本的口径，或对外口径与审批版不一致，说明 `external_use_approved_only` / `version_latest_approved` 红线未生效，须回查契约；
 - **人工抽检**：抽 1 个主题，对照审批记录，确认引用的是最新审批版、无过期口径混入。
@@ -123,7 +123,7 @@
 
 | 用户问法 | 模式 | 反应 |
 |---------|------|------|
-| "查一下河流守望者计划对外口径文档" | **GDT 触发**（命中 `question_examples`）| 加载本契约，审批版过滤+受治理检索、必带版本出处、无命中 BLOCKED |
+| "查一下示例项目对外口径文档" | **GDT 触发**（命中 `question_examples`）| 加载本契约，审批版过滤+受治理检索、必带版本出处、无命中 BLOCKED |
 | "我们项目一般怎么对外讲的"（内部探讨）| **闲聊/自由** | 不加载契约，SAG 灵活检索、不强制引用、不作对外口径 |
 | "帮我把这个写成对外发的稿子"（触及对外发布）| 闲聊中检测到信号 → **主动提示升级** | "对外发布须用审批版口径，我按受治理契约只取审批版、不用草稿，可以吗？"确认后切 GDT 触发 |
 
