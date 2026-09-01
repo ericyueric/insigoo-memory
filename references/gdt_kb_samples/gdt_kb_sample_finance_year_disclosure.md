@@ -119,7 +119,7 @@
 
 ## 4. 验证证据（GDTcreater（未开源，本技能不依赖） 第六件套 · 核对方式）
 
-- **动作**：用 `rag_helper.py --query "2025 年所有财务披露材料汇总"` 跑一次；
+- **动作**：用 SAG 检索 API 验证——`curl -X POST http://127.0.0.1:4173/search -d '{"query":"2025 年所有财务披露材料汇总","top_k":5}'` 跑一次；
 - **预期**：返回结果**全部**落在 `budget/income/expense/audit/public_report` 五类路径内，且每条金额都带源文件出处；
 - **反例（应被拦截）**：若返回了"据估算约 XX 万""占比大概 30%"等无源数字，说明 `financial_number_no_inference` 未生效，需回查契约；
 - **数字核对**：抽检 3 笔金额，确认与源文件逐字一致，无 agent 改写；
