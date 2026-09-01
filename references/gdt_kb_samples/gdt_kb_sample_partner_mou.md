@@ -97,22 +97,22 @@
 
 ## 3. 填参示例（让样本"可运行"）
 
-把 `open_params` 代入：`合作方名称 = 河流守望者联盟`：
+把 `open_params` 代入：`合作方名称 = 示例合作方`：
 
-- `query_spec.filter` 解析为 `partner = 河流守望者联盟`；
+- `query_spec.filter` 解析为 `partner = 示例合作方`；
 - `mapping_table` 解析为：
-  - `partners/河流守望者联盟/README.md`
-  - `contracts/mou/河流守望者联盟_MOU.md`
-  - `contracts/cooperation/河流守望者联盟_协议.md`
-  - `governance/authority/河流守望者联盟_授权.md`
+  - `partners/示例合作方/README.md`
+  - `contracts/mou/示例合作方_MOU.md`
+  - `contracts/cooperation/示例合作方_协议.md`
+  - `governance/authority/示例合作方_授权.md`
 - 命中任一 `question_examples` 语义 → 加载本契约 → 仅在该合作方关联受治理语料内检索 → 必带出处 → 无命中答 BLOCKED。
 
 ---
 
 ## 4. 验证证据（GDTcreater（未开源，本技能不依赖） 第六件套 · 核对方式）
 
-- **动作**：用 `rag_helper.py --query "我们和河流守望者联盟是什么合作关系"` 跑一次；
-- **预期**：返回结果**全部**带 `partner = 河流守望者联盟` 过滤，落在 `partners/contracts/governance` 路径内，且每条带文件出处；
+- **动作**：用 SAG 检索 API 验证——`curl -X POST http://127.0.0.1:4173/search -d '{"query":"我们和示例合作方是什么合作关系","top_k":5}'` 跑一次；
+- **预期**：返回结果**全部**带 `partner = 示例合作方` 过滤，落在 `partners/contracts/governance` 路径内，且每条带文件出处；
 - **反例（应被拦截）**：若返回了**非**该合作方的协议，或暴露了未公开的条款/商业条件/内部评级，说明 `confidential_clause_no_overexpose` 红线未生效，须回查契约；
 - **人工抽检**：抽 1 个合作方，对照真实 MOU/协议，确认合作关系描述未夸大、权责边界未超授权范围。
 - **记录**：验证人与日期写入本包 `status: PUBLISHED` 旁注。
@@ -123,7 +123,7 @@
 
 | 用户问法 | 模式 | 反应 |
 |---------|------|------|
-| "查一下跟河流守望者联盟的备忘录内容" | **GDT 触发**（命中 `question_examples`）| 加载本契约，partner 过滤+受治理检索、必带出处、无命中 BLOCKED |
+| "查一下跟示例合作方的备忘录内容" | **GDT 触发**（命中 `question_examples`）| 加载本契约，partner 过滤+受治理检索、必带出处、无命中 BLOCKED |
 | "我们大概跟哪些机构有合作？"（泛泛而谈）| **闲聊/自由** | 不加载契约，SAG 灵活检索、不强制引用、不作正式披露 |
 | "跟某机构合作到什么程度了，对外能怎么讲"（触及对外表述/未公开条款）| 闲聊中检测到信号 → **主动提示升级** | "这涉及合作条款与对外表述边界，我按受治理契约保证不外露未公开内容、不夸大合作关系，可以吗？"确认后切 GDT 触发 |
 
