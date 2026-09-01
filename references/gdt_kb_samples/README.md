@@ -1,6 +1,6 @@
 # GDT-KB 示范任务包集索引
 
-> 版本：v1.0 ｜ 归属：insigoo-memory（GDT-KB 适配）× insigoo-knowledge-base（组织知识库通用标准 v1.1）
+> 版本：v1.0 ｜ 归属：insigoo-sag-architect（GDT-KB 适配）× insigoo-knowledge-base（组织知识库通用标准 v1.1）
 > 作用：本目录含 **15 个严格同 schema** 的可运行示范任务包（GDT-KB），供公益组织直接对标改编，把"受治理查询场景索引"从方法论变成可抄样本。
 
 ## 一、这是什么
