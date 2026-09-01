@@ -1,6 +1,6 @@
 # GDT-KB 示范任务包：内部工具 / SOP 知识检索
 
-> 本文件是 `insigoo-memory` 技能 + `insigoo-knowledge-base` 三层索引 v1.1「受治理查询场景索引」的**可运行示范任务包**之一。
+> 本文件是 `insigoo-sag-architect` 技能 + `insigoo-knowledge-base` 三层索引 v1.1「受治理查询场景索引」的**可运行示范任务包**之一。
 > 用法：复制本文件，替换 `<...>` 占位符与 `open_params` 实际值，即可落成本组织自己的 GDT-KB 任务包。
 > 结构遵循 GDT-Core「要素结构层（六要素）+ 纪律约束层（六约束）」双层，并在 `locked_contract` 中写入本场景专属红线。
 
