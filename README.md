@@ -1,4 +1,4 @@
-# insigoo-memory — 社会组织 SAG 知识库架构师（开源版 v2.0.0 · MIT）
+# insigoo-sag-architect — 社会组织 SAG 知识库架构师（开源版 v1.0.0 · MIT）
 
 帮社会组织把散落的历史资料，变成"建得起来、查得到、管得住、说得清"的专属 SAG 知识库。
 
@@ -34,9 +34,9 @@
 
 ## 二、安装
 
-1. 将本目录（`insigoo-memory/`）整体放入 WorkBuddy 技能目录：
-   - 用户级：`~/.workbuddy/skills/insigoo-memory/`
-   - 或项目级：`<项目>/.workbuddy/skills/insigoo-memory/`
+1. 将本目录（`insigoo-sag-architect/`）整体放入 WorkBuddy 技能目录：
+   - 用户级：`~/.workbuddy/skills/insigoo-sag-architect/`
+   - 或项目级：`<项目>/.workbuddy/skills/insigoo-sag-architect/`
 2. 重启 WorkBuddy 或刷新技能索引。
 3. （可选）如需增强能力，另行安装上述可选依赖技能。
 4. 在对话中说出触发词（如"帮我搭知识库""做 SAG 知识库""按披露标准整理资料""SIA 诊断"）即加载本技能。
@@ -68,7 +68,7 @@
 ## 五、目录结构
 
 ```
-insigoo-memory/
+insigoo-sag-architect/
 ├── SKILL.md                      # 技能主文件（能力一/二/三 + GDT 双层 + 双模式 + 硬约束）
 ├── LICENSE                       # MIT 开源许可
 ├── README.md                     # 本文件
