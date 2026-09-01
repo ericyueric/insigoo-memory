@@ -95,7 +95,7 @@
 ## 3. 填参示例（让样本"可运行"）
 
 - `mapping_table` 解析为：
-  - `risk/complaints/河流守望者计划/2025-03-12_投诉.md`（confidential）
+  - `risk/complaints/示例项目/2025-03-12_投诉.md`（confidential）
   - `risk/crisis/2024_舆情事件_处理.md`（confidential）
   - `risk/reputation/2025-01-20_舆情.md`（confidential）
   - `risk/register/2025_风险台账.md`
@@ -106,7 +106,7 @@
 
 ## 4. 验证证据（GDTcreater（未开源，本技能不依赖） 第六件套 · 核对方式）
 
-- **动作**：用 `rag_helper.py --query "河流守望者计划 投诉记录"` 跑一次；
+- **动作**：用 SAG 检索 API 验证——`curl -X POST http://127.0.0.1:4173/search -d '{"query":"示例项目 投诉记录","top_k":5}'` 跑一次；
 - **预期**：返回结果**全部**落在 `risk/*` 路径内，且**个人信息已脱敏**、带 confidential 标注与出处；
 - **反例（应被拦截）**：若返回了投诉人真实姓名/电话，或把涉密危机记录直接进了对外摘要，说明 `pii_mask` / `confidential_no_external` 红线未生效，须回查契约；
 - **人工抽检**：抽 1 条投诉记录，对照真实文件，确认脱敏与权限校验生效、无外泄。
