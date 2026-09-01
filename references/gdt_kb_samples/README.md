@@ -11,7 +11,7 @@ GDT-KB 是 **GDT-Core（通用治理内核）** 在"知识管理场景"的适配
 - **六约束**：① 受治理源 ② 锁定契约 ③ 事实解读分离 ④ 版本不可覆盖 ⑤ 不猜测 ⑥ 触发只路由不执行
 - **双模式**：闲聊/自由 ↔ GDT 触发（受治理），判定逻辑见本技能 `references/three_layer_index.md` §3.1
 
-每个样本文件结构统一（7 段）：0 怎么用 → 1 六要素 yaml 契约 → 2 六要素逐项说明 → 3 填参示例 → 4 验证证据（GDTcreater 第六件套）→ 5 双模式注解。
+每个样本文件结构统一（7 段）：0 怎么用 → 1 六要素 yaml 契约 → 2 六要素逐项说明 → 3 填参示例 → 4 验证证据（GDTcreater（未开源，本技能不依赖） 第六件套）→ 5 双模式注解。
 
 ## 二、敏感度分级与双模式反应
 
@@ -48,7 +48,7 @@ GDT-KB 是 **GDT-Core（通用治理内核）** 在"知识管理场景"的适配
 2. **复制文件**：把 `gdt_kb_sample_xxx.md` 复制到本组织知识库 `references/gdt_kb/`（或同级目录）。
 3. **填参**：保留 yaml 契约结构，改 `open_params`（组织名/项目名/年份等）、`source_scope`（本组织实际节点路径）、`mapping_table`（本组织实际映射）。
 4. **加红线**：在 `locked_contract` 增删场景专属约束（参考索引表"场景专属红线"列）。
-5. **验证**：按文件末尾"验证证据（GDTcreater 第六件套）"逐项核对，确认 `fallback: BLOCKED` 与 `status: PUBLISHED`。
+5. **验证**：按文件末尾"验证证据（GDTcreater（未开源，本技能不依赖） 第六件套）"逐项核对，确认 `fallback: BLOCKED` 与 `status: PUBLISHED`。
 6. **登记索引**：把该契约登记进组织知识库第 3 层"受治理查询场景索引"（见 `three_layer_index.md`）。
 
 ## 五、关联文档
@@ -56,5 +56,5 @@ GDT-KB 是 **GDT-Core（通用治理内核）** 在"知识管理场景"的适配
 - GDT-Core 双层建模与通用化设计：本技能 `references/gdt_design.md`
 - 组织知识库三层索引标准（v1.1，含双模式 §3.1）：本技能 `references/three_layer_index.md`
 - 知识库维护指南（含 4.5 双模式检索规范）：本技能 `references/maintenance_guide.md`
-- 六件套向导引擎（数据任务）：`GDTcreater` 技能
+- 六件套向导引擎（数据任务）：`GDTcreater（未开源，本技能不依赖）` 技能
 - 知识诊断武器：`insigoo-sia` 技能
