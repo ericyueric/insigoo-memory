@@ -1,8 +1,8 @@
 # GDT-KB 示范任务包 · 项目全周期披露文档检索
 
-> **用途**：这是 `insigoo-memory`（GDT-KB 适配）的第一个**可运行示范任务包**，用「受治理查询场景索引」六要素 schema 完整落地一个高频组织知识查询场景。
-> **创建纪律**：遵循 `GDTcreater（未开源，本技能不依赖）` 六件套引擎（任务元数据→查询规范→映射证据→受控执行包→产物契约→验证证据），按 GDT-KB 语义映射落盘（见 `insigoo-memory` 2.5.4）。
-> **对应标准**：`three_layer_index.md` v1.1 第 3 层 schema；`insigoo-memory` 2.4 契约。
+> **用途**：这是 `insigoo-sag-architect`（GDT-KB 适配）的第一个**可运行示范任务包**，用「受治理查询场景索引」六要素 schema 完整落地一个高频组织知识查询场景。
+> **创建纪律**：遵循 `GDTcreater（未开源，本技能不依赖）` 六件套引擎（任务元数据→查询规范→映射证据→受控执行包→产物契约→验证证据），按 GDT-KB 语义映射落盘（见 `insigoo-sag-architect` 2.5.4）。
+> **对应标准**：`three_layer_index.md` v1.1 第 3 层 schema；`insigoo-sag-architect` 2.4 契约。
 > **双模式**：本任务包是**受治理（GDT 触发）**场景；闲聊/自由查询不加载本契约（见末尾双模式注解）。
 
 ---
