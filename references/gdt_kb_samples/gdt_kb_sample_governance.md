@@ -1,7 +1,7 @@
 # GDT-KB 示范任务包 · 治理与内部制度文件检索
 
 > **用途**：GDT-KB 适配示范样本之一，用「受治理查询场景索引」六要素 schema 落地「章程/理事会决议/内部制度检索」高频场景。
-> **创建纪律**：遵循 `GDTcreater` 六件套引擎，按 GDT-KB 语义映射落盘（见 `insigoo-memory` 2.5.4）。
+> **创建纪律**：遵循 `GDTcreater（未开源，本技能不依赖）` 六件套引擎，按 GDT-KB 语义映射落盘（见 `insigoo-memory` 2.5.4）。
 > **对应标准**：`three_layer_index.md` v1.1 第 3 层 schema；`insigoo-memory` 2.4 契约。
 > **双模式**：本任务包是**受治理（GDT 触发）**场景；闲聊/自由查询不加载本契约（见末尾双模式注解）。
 
@@ -104,7 +104,7 @@
 
 ---
 
-## 4. 验证证据（GDTcreater 第六件套 · 核对方式）
+## 4. 验证证据（GDTcreater（未开源，本技能不依赖） 第六件套 · 核对方式）
 
 - **动作**：用 `rag_helper.py --query "理事会决议里怎么定财务审批权限"` 跑一次；
 - **预期**：返回结果**全部**落在 `org/charter`、`org/governance/council`、`org/policies`、`org/structure` 路径内，且**带原文摘录与出处**；
