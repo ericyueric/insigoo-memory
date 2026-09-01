@@ -113,7 +113,7 @@
 
 ## 4. 验证证据（GDTcreater（未开源，本技能不依赖） 第六件套 · 核对方式）
 
-- **动作**：用 `rag_helper.py --query "2025 年合规和年检材料归集"` 跑一次；
+- **动作**：用 SAG 检索 API 验证——`curl -X POST http://127.0.0.1:4173/search -d '{"query":"2025 年合规和年检材料归集","top_k":5}'` 跑一次；
 - **预期**：返回结果**全部**落在 `governance/compliance`、`finance/audit`、`reports/annual`、`governance/qualification` 四类路径内，且每条带文件出处；
 - **反例（应被拦截）**：若返回"我们去年年检肯定过了"这类**无出处结论**，说明 `compliance_no_self_assessment` 红线未生效，须回查契约；
 - **人工抽检**：抽 1 个年度，对照真实合规文件夹，确认契约路径与实际一致、无断链。
