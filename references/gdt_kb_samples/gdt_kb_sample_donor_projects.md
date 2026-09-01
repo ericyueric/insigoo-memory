@@ -97,22 +97,22 @@
 
 ## 3. 填参示例（让样本"可运行"）
 
-把 `open_params` 代入：`捐赠方名称 = 守望者公益基金会`：
+把 `open_params` 代入：`捐赠方名称 = 示例基金会`：
 
-- `query_spec.filter` 解析为 `donor = 守望者公益基金会`；
+- `query_spec.filter` 解析为 `donor = 示例基金会`；
 - `mapping_table` 解析为：
-  - `projects/<项目名>/README.md`（筛 donor=守望者公益基金会）
-  - `contracts/grant/守望者公益基金会_2025_协议.md`
-  - `finance/grants/守望者公益基金会_拨款流水.md`
-  - `reports/donor/守望者公益基金会_年度披露.md`
+  - `projects/<项目名>/README.md`（筛 donor=示例基金会）
+  - `contracts/grant/示例基金会_2025_协议.md`
+  - `finance/grants/示例基金会_拨款流水.md`
+  - `reports/donor/示例基金会_年度披露.md`
 - 命中任一 `question_examples` 语义 → 加载本契约 → 仅在该捐赠方关联受治理语料内检索 → 必带出处 → 无命中答 BLOCKED。
 
 ---
 
 ## 4. 验证证据（GDTcreater（未开源，本技能不依赖） 第六件套 · 核对方式）
 
-- **动作**：用 `rag_helper.py --query "守望者公益基金会 投了我们哪些项目"` 跑一次；
-- **预期**：返回结果**全部**带 `donor = 守望者公益基金会` 过滤，落在 `projects/finance/grants/reports/donor/contracts/grant` 路径内，且每条带文件出处；
+- **动作**：用 SAG 检索 API 验证——`curl -X POST http://127.0.0.1:4173/search -d '{"query":"示例基金会 投了我们哪些项目","top_k":5}'` 跑一次；
+- **预期**：返回结果**全部**带 `donor = 示例基金会` 过滤，落在 `projects/finance/grants/reports/donor/contracts/grant` 路径内，且每条带文件出处；
 - **反例（应被拦截）**：若返回了**其他捐赠方**的项目，或暴露了未公开的捐赠方联系人/内部评级，说明 `donor_sensitive_no_overexpose` 红线未生效，须回查契约；
 - **人工抽检**：抽 1 个捐赠方，对照真实项目主档 donor 标签，确认过滤正确、无串档。
 - **记录**：验证人与日期写入本包 `status: PUBLISHED` 旁注。
@@ -123,7 +123,7 @@
 
 | 用户问法 | 模式 | 反应 |
 |---------|------|------|
-| "把守望者公益基金会相关的所有项目披露找出来" | **GDT 触发**（命中 `question_examples`）| 加载本契约，donor 过滤+受治理检索、必带出处、无命中 BLOCKED |
+| "把示例基金会相关的所有项目披露找出来" | **GDT 触发**（命中 `question_examples`）| 加载本契约，donor 过滤+受治理检索、必带出处、无命中 BLOCKED |
 | "我们大概有哪些大资助方？"（泛泛而谈）| **闲聊/自由** | 不加载契约，SAG 灵活检索、不强制引用、不作正式披露 |
 | "给某捐赠人出份材料，要写清他们投了啥"（触及对捐赠方披露义务）| 闲聊中检测到信号 → **主动提示升级** | "这涉及对捐赠方披露口径，我按受治理契约保证准确、不超范围暴露敏感信息，可以吗？"确认后切 GDT 触发 |
 
