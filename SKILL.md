@@ -1,6 +1,6 @@
 ---
-name: insigoo-memory
-version: 2.0.0
+name: insigoo-sag-architect
+version: 1.0.0
 description: 社会组织 SAG 知识库架构师 — 帮助社会组织搭建专属 SAG 知识库，按公益项目管理-披露标准编译历史资料，并基于 SIA 标准诊断组织知识、给出知识管理优化建议。适用于：搭建组织知识库、设计知识库索引系统、历史资料编译整理、公益项目知识诊断、组织知识管理优化。本技能不提供文件可视化看板，聚焦"建库 + 编译 + 诊断"三件事。
 author: insigoo · 广州市因思阁咨询有限公司
 trigger_keywords:
@@ -17,7 +17,7 @@ trigger_keywords:
   - 知识库索引
   - 查询场景索引
   - GDT 通用化
-  - insigoo-memory
+  - insigoo-sag-architect
 tags:
   - 知识库
   - SAG
@@ -42,7 +42,7 @@ optional_dependencies:
   - GDTcreater                # [可选][本地] GDT-DB 六件套向导，未开源；本技能 2.5.4 已含 KB 映射卡，无需依赖
 ---
 
-# insigoo-memory v2.0 — 社会组织 SAG 知识库架构师
+# insigoo-sag-architect v1.0 — 社会组织 SAG 知识库架构师
 
 > 帮社会组织把散落的历史资料，变成"建得起来、查得到、管得住、说得清"的专属 SAG 知识库。
 > 三件事：**建库（SAG）× 编译（公益项目-披露标准 + GDT-Core 要素+纪律）× 诊断（SIA）**。
@@ -71,9 +71,9 @@ optional_dependencies:
 - "把这些历史资料按公益项目标准整理一下" / "按披露要求编译项目文档"
 - "给我们组织做个知识体检" / "用 SIA 看看我们项目资料健不健康"
 - "设计一下知识库的索引系统 / 编译维护标准 / 查询场景索引"
-- 用户点名 `insigoo-memory`
+- 用户点名 `insigoo-sag-architect`
 
-> 注意：本技能**不包含**文件可视化看板、9 区自动分类 CLI、日程提醒等旧版功能（已在 v2.0 移除，见文末"与 v1.x 差异"）。
+> 注意：本技能**不包含**文件可视化看板、9 区自动分类 CLI、日程提醒等旧版功能（已在 v1.0 移除，见文末"与 v1.x 差异"）。
 
 ---
 
@@ -379,7 +379,7 @@ optional_dependencies:
 
 ## 与 v1.x 的关键差异（已移除内容）
 
-| v1.x 内容 | v2.0 处理 |
+| v1.x 内容 | v1.0 处理 |
 |-----------|-----------|
 | 9 区自动分类（industry/research/...） | 移除，替换为"公益项目-披露 7 类"索引系统（2.1） |
 | `dashboard` 可视化看板（dashboard.html） | 移除，不再生成任何前端看板 |
