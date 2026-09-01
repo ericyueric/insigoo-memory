@@ -106,7 +106,7 @@
 
 ## 4. 验证证据（GDTcreater（未开源，本技能不依赖） 第六件套 · 核对方式）
 
-- **动作**：用 `rag_helper.py --query "理事会决议里怎么定财务审批权限"` 跑一次；
+- **动作**：用 SAG 检索 API 验证——`curl -X POST http://127.0.0.1:4173/search -d '{"query":"理事会决议里怎么定财务审批权限","top_k":5}'` 跑一次；
 - **预期**：返回结果**全部**落在 `org/charter`、`org/governance/council`、`org/policies`、`org/structure` 路径内，且**带原文摘录与出处**；
 - **反例（应被拦截）**：若返回"按惯例应该是理事长批"（无原文依据），说明 `governance_no_rewrite` 红线未生效，须回查契约；
 - **人工抽检**：抽 1 份制度，对照真实文件版本与 status，确认契约路径与实际一致、未混入失效版。
